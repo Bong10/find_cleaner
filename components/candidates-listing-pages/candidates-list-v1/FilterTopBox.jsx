@@ -9,10 +9,10 @@ import {
   addLocation,
   addDestination,
   addCategory,
-  addCandidateGender,
-  addDatePost,
+  // addCandidateGender,
+  // addDatePost,
   addExperience,
-  addQualification,
+  // addQualification,
   addSort,
   addPerPage,
 } from "@/store/slices/filterSlice";
@@ -79,10 +79,10 @@ const FilterTopBox = ({ count = 0 }) => {
     dispatch(addLocation(""));
     dispatch(addDestination({ min: 0, max: 100 }));
     dispatch(addCategory(""));
-    dispatch(addCandidateGender(""));
-    dispatch(addDatePost("all"));
+    // dispatch(addCandidateGender(""));
+    // dispatch(addDatePost("all"));
     dispatch(addExperience([]));
-    dispatch(addQualification([]));
+    // dispatch(addQualification([]));
     dispatch(addTalents([]));
     dispatch(addTechnologies([]));
     dispatch(addSort(""));
