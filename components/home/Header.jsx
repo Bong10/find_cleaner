@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { performLogout } from "@/store/slices/authSlice";
 import { useRouter, usePathname } from "next/navigation";
 import employerMenuData from "../../data/employerMenuData";
-import candidatesMenuData from "../../data/candidatesMenuData"; // ✅ added
+import candidatesMenuData from "../../data/candidatesMenuData";
 import { isActiveLink } from "../../utils/linkActiveChecker";
 
 const Header = () => {
@@ -33,10 +33,9 @@ const Header = () => {
 
   const handleLogout = async () => {
     await dispatch(performLogout());
-    window.location.replace("/"); // hard reload & replace history (kept)
+    window.location.replace("/");
   };
 
-  // Intercept only the Logout item in the dropdown
   const handleLogoutClick = async (e) => {
     e.preventDefault();
     await handleLogout();
@@ -52,14 +51,13 @@ const Header = () => {
     return "/";
   };
 
-  // ✅ menu selection based on role (candidate/cleaner → candidatesMenuData)
   const roleName = String(user?.role || "").toLowerCase();
   const isCandidate = roleName === "candidate" || roleName === "cleaner";
   const menuData = isCandidate ? candidatesMenuData : employerMenuData;
 
   let avatarSrc = "/images/resource/avatar-1.jpg";
   if (user?.profile_picture) {
-    avatarSrc = user.profile_picture; // use backend image as-is
+    avatarSrc = user.profile_picture;
   }
 
   if (!isClient) return null;
@@ -73,25 +71,33 @@ const Header = () => {
       }`}
     >
       <div className="main-box">
-        <div className="nav-outer">
-          <div className="logo-box">
-            <div className="logo">
-              <Link href={isAuthenticated ? getDashboardRoute() : "/"}>
-                <Image
-                  width={50}
-                  height={50}
-                  src="/images/logo.png"
-                  alt="brand"
-                />
-              </Link>
-            </div>
+        {/* Logo section */}
+        <div className="logo-box">
+          <div className="logo">
+            <Link href={isAuthenticated ? getDashboardRoute() : "/"}>
+              <Image
+                width={51}
+                height={46}
+                style={{
+                    width: '51px',
+                    height: '46px',
+                  }}
+                src="/images/logo.png"
+                alt="brand"
+              /> <span className="logo-text">TidyLinker</span>
+            </Link>
           </div>
+        </div>
+
+        {/* Centered navigation */}
+        <div className="nav-outer">
           <HeaderNavContent />
         </div>
 
+        {/* Right section */}
         <div className="outer-box">
           {isAuthenticated && user ? (
-            // ==== Dashboard-style controls (icons + avatar dropdown) ====
+            // ==== Authenticated user controls ====
             <>
               <button className="menu-btn auth-actions">
                 <span className="count">1</span>
@@ -139,36 +145,77 @@ const Header = () => {
               </div>
             </>
           ) : (
-            // ==== Public buttons (unchanged) ====
-            
-                      <div className="btn-box">
-                        <a
-                          href="#"
-                          className="theme-btn btn-style-three call-modal"
-                          data-bs-toggle="modal"
-                          data-bs-target="#loginPopupModal"
-                        >
-                          Login / Register
-                        </a>
-                        <Link
-                          href="/employers-dashboard/post-jobs"
-                          className="theme-btn btn-style-one"
-                        >
-                          Post a Job
-                        </Link>
-                      </div>
+            // ==== Public user controls ====
+            <div className="public-controls">
+              {/* Login/Signup button */}
+              <a
+                href="#"
+                className="login-signup-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#loginPopupModal"
+              >
+                Login / Signup
+              </a>
+
+              {/* Language selector */}
+              <button className="icon-btn language-btn">
+                <span className="icon la la-globe"></span>
+              </button>
+
+              {/* User dropdown for public visitors */}
+              <div className="dropdown user-dropdown">
+                <button
+                  className="icon-btn user-btn dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <span className="icon la la-user"></span>
+                </button>
+                <ul className="dropdown-menu">
+                  <li>
+                    <Link href="/register?type=cleaner" className="dropdown-item">
+                      <i className="la la-broom"></i> Become a Cleaner
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/register?type=employer" className="dropdown-item">
+                      <i className="la la-briefcase"></i> Become an Employer
+                    </Link>
+                  </li>
+                  <li>
+                    <hr className="dropdown-divider" />
+                  </li>
+                  <li>
+                    <Link href="/about" className="dropdown-item">
+                      <i className="la la-info-circle"></i> About Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/help" className="dropdown-item">
+                      <i className="la la-question-circle"></i> Help Center
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
           )}
         </div>
       </div>
 
-      {/* ==== Scoped tweaks: make ONLY this section white & fix avatar ==== */}
-            <style jsx>{`
+      <style jsx>{`
         .-type-12 {
           background: #FFFFFF;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
           position: relative;
           top: 0;
           z-index: 100;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
         }
         
         .main-box {
@@ -178,39 +225,61 @@ const Header = () => {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          height: 70px;
+        }
+
+        .logo-box {
+          flex: 0 0 auto;
+        }
+
+        .logo img {
+              max-width: 51px;
+              height: 46px;
         }
         
         .logo {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          text-decoration: none;
-        }
-        
-        .logo-text {
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #111827;
-        }
-        
-        .header-nav {
-          display: flex;
-          align-items: center;
-          gap: 1.25rem;
-        }
-        
-        .nav-link {
-          color: #6B7280;
-          text-decoration: none;
         }
 
-        .nav-link:hover {
+        .nav-outer {
+          flex: 1;
+          display: flex;
+          justify-content: center;
+          padding: 0 2rem;
+        }
+        
+        .outer-box {
+          flex: 0 0 auto;
+        }
+
+        .public-controls {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .login-signup-btn {
+          padding: 8px 20px;
+          background: transparent;
+          border: 1px solid #E5E7EB;
+          border-radius: 8px;
+          color: #6B7280;
+          text-decoration: none;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all 0.3s ease;
+        }
+
+        .login-signup-btn:hover {
+          background: #F9FAFB;
           color: #111827;
+          border-color: #D1D5DB;
         }
         
         .icon-btn {
-          width: 36px;
-          height: 36px;
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
           border: none;
           background: #F3F4F6;
@@ -219,18 +288,34 @@ const Header = () => {
           justify-content: center;
           cursor: pointer;
           color: #6B7280;
+          transition: all 0.3s ease;
         }
         
         .icon-btn:hover {
           background: #E5E7EB;
+          color: #374151;
+        }
+
+        .icon-btn .icon {
+          font-size: 18px;
+        }
+
+        .user-dropdown {
+          position: relative;
         }
 
         @media (max-width: 768px) {
-          .header-container {
+          .main-box {
             padding: 0.75rem 1rem;
           }
-          .logo-text, .nav-link {
+          
+          .nav-outer {
             display: none;
+          }
+
+          .login-signup-btn {
+            padding: 6px 12px;
+            font-size: 13px;
           }
         }
       `}</style>
@@ -241,11 +326,11 @@ const Header = () => {
         }
 
         :global(.auth-actions .name) {
-          color: # !important;
+          color: #111827 !important;
         }
 
         :global(.auth-actions .count) {
-          color: #2aa389 !important;
+          color: white !important;
           background: #3b82f6;
           border-radius: 999px;
           font-size: 11px;
@@ -257,6 +342,7 @@ const Header = () => {
           justify-content: center;
           transform: translate(6px, -6px);
         }
+
         :global(.auth-actions .avatar-thumb) {
           width: 40px !important;
           height: 36px !important;
@@ -266,6 +352,35 @@ const Header = () => {
           border: 2px solid rgba(255, 255, 255, 0.9);
           background: #2aa389;
           display: inline-block;
+        }
+
+        :global(.user-dropdown .dropdown-menu) {
+          border: none;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          padding: 8px 0;
+          margin-top: 8px;
+        }
+
+        :global(.user-dropdown .dropdown-item) {
+          padding: 8px 16px;
+          color: #6B7280;
+          font-size: 14px;
+          transition: all 0.2s ease;
+        }
+
+        :global(.user-dropdown .dropdown-item:hover) {
+          background: #F3F4F6;
+          color: #111827;
+        }
+
+        :global(.user-dropdown .dropdown-item i) {
+          margin-right: 8px;
+          width: 16px;
+        }
+
+        :global(.user-dropdown .dropdown-divider) {
+          margin: 4px 0;
         }
       `}</style>
     </header>

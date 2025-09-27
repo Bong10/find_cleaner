@@ -38,19 +38,19 @@ const HeaderNavContent = () => {
           </li>
 
           {/* Pricing & Plans */}
-          <li>
+          {/* <li>
             <Link href="/pricing">Pricing & Plans</Link>
-          </li>
+          </li> */}
 
           {/* How it Works */}
-          <li>
+          {/* <li>
             <Link href="/home-12">How It Works</Link>
-          </li>
+          </li> */}
 
           {/* Blog */}
-          <li>
+          {/* <li>
             <Link href="/blog-list-v1">Blog</Link>
-          </li>
+          </li> */}
         </ul>
       </nav>
     </>
