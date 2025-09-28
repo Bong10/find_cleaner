@@ -9,7 +9,10 @@ import { store } from "../store/store";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
-// ⬇️ NEW: tiny gate component
+// Import the new Preloader component
+import Preloader from "../components/common/Preloader.jsx";
+
+// Auth gate component
 import { useDispatch, useSelector } from "react-redux";
 import { bootstrapAuth } from "@/store/slices/authSlice";
 
@@ -21,10 +24,10 @@ function AuthGate({ children }) {
     dispatch(bootstrapAuth());
   }, [dispatch]);
 
-   if (bootstrapping) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (bootstrapping) {
+    return <Preloader />;
   }
- // or a small loader
+  
   return children;
 }
 
@@ -49,7 +52,7 @@ export default function RootLayout({ children }) {
           name="keywords"
           content="candidates, career, employment, job board, job listing, job portal, job search, recruiters, recruitment, resume"
         />
-        <meta name="description" content="Superio - Job Board React NextJS Template" />
+        <meta name="description" content="TidyLinking - Connecting Cleaners with Opportunities" />
         <meta name="ibthemes" content="ATFN" />
         <link rel="icon" href="/favicon.ico" />
       </head>

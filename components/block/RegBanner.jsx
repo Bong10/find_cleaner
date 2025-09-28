@@ -190,7 +190,7 @@ const RegBanner = () => {
 
           .banner-style-two .content, 
           .banner-style-one .content {
-              padding-right: 50px !important;
+              padding-right: 0px !important;
           }
         }
 
