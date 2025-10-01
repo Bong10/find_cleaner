@@ -61,6 +61,24 @@ export const bootstrapAuth = createAsyncThunk(
   }
 );
 
+
+// Add this to authSlice.js
+export const activateUserAccount = createAsyncThunk(
+  "auth/activateAccount",
+  async ({ uid, token }, thunkAPI) => {
+    try {
+      const data = await AuthService.activateAccount(uid, token);
+      // Auto-fetch user after activation
+      if (data.access) {
+        await thunkAPI.dispatch(fetchCurrentUser());
+      }
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error?.response?.data || error?.message);
+    }
+  }
+);
+
 /** LOGOUT (thunk): clear client FIRST, then tell server to clear cookie */
 export const performLogout = createAsyncThunk(
   "auth/performLogout",

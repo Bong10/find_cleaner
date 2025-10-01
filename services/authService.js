@@ -71,6 +71,15 @@ export async function changePassword(currentPassword, newPassword, confirmPasswo
   return data || {};
 }
 
+// Add this to authService.js
+export const activateAccount = async (uid, token) => {
+  const { data } = await api.get(`/api/users/activate/${uid}/${token}/`);
+  if (data.access && typeof window !== "undefined") {
+    localStorage.setItem("access_token", data.access);
+  }
+  return data;
+};
+
 const AuthService = {
   login,
   getCurrentUser,
@@ -81,3 +90,4 @@ const AuthService = {
 };
 
 export default AuthService;
+
