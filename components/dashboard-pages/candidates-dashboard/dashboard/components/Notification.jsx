@@ -1,51 +1,126 @@
+import Link from "next/link";
+import { useEffect, useState } from 'react';
+// Future: import { getNotifications } from '@/services/cleanerService';
+
 const Notification = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      // TODO: Uncomment when backend endpoint is ready
+      // const response = await getNotifications();
+      // setNotifications(response?.data || []);
+      
+      // For now, use default notifications for cleaners
+      const defaultNotifications = [
+        {
+          id: 1,
+          icon: "flaticon-briefcase",
+          text: "New cleaning job in ",
+          highlight: "Downtown Office",
+          time: "1 hour ago",
+        },
+        {
+          id: 2,
+          icon: "flaticon-bookmark",
+          text: "Employer saved your ",
+          highlight: "Cleaner Profile",
+          time: "2 hours ago",
+        },
+        {
+          id: 3,
+          icon: "flaticon-envelope",
+          text: "Message about ",
+          highlight: "House Cleaning Job",
+          time: "3 hours ago",
+        },
+        {
+          id: 4,
+          icon: "flaticon-envelope",
+          text: "Your application viewed for ",
+          highlight: "Office Cleaning",
+          time: "5 hours ago",
+        },
+        {
+          id: 5,
+          icon: "flaticon-envelope",
+          text: "Job match: ",
+          highlight: "Hotel Housekeeping",
+          time: "1 day ago",
+        },
+      ];
+
+      setNotifications(defaultNotifications);
+      
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      // On error, still show default notification
+      setNotifications([
+        {
+          id: 1,
+          icon: "flaticon-briefcase",
+          text: "New cleaning job in ",
+          highlight: "Your Area",
+          time: "1 hour ago",
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <ul className="notification-list">
-      <li>
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Henry Wilson</strong> applied for a job
-        <span className="colored"> Product Designer</span>
-      </li>
-      {/* End li */}
-
-      <li className="success">
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Raul Costa</strong> applied for a job
-        <span className="colored"> Product Manager, Risk</span>
-      </li>
-      {/* End li */}
-
-      <li>
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Jack Milk</strong> applied for a job
-        <span className="colored"> Technical Architect</span>
-      </li>
-      {/* End li */}
-
-      <li className="success">
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Michel Arian</strong>
-        applied for a job
-        <span className="colored"> Software Engineer</span>
-      </li>
-      {/* End li */}
-
-      <li>
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Wade Warren</strong> applied for a job
-        <span className="colored"> Web Developer</span>
-      </li>
-      {/* End li */}
-
-      <li className="success">
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Michel Arian</strong>
-        applied for a job
-        <span className="colored"> Software Engineer</span>
-      </li>
-      {/* End li */}
-    </ul>
+    <>
+      <div className="widget-title">
+        <h4>Notifications</h4>
+      </div>
+      <div className="widget-content">
+        <ul className="notification-list">
+          {notifications.map((item) => (
+            <li key={item.id}>
+              <span 
+                className={`icon ${item.icon}`}
+                style={{ 
+                  fontSize: '18px',
+                  marginRight: '10px',
+                }}
+              ></span>
+              {item.text}
+              <strong>{item.highlight}</strong>
+              {' '}
+              <Link href="#" className="colored" style={{ marginLeft: '5px' }}>
+                {item.time}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 };
 
 export default Notification;
+
+/* 
+  Backend Integration Notes:
+  
+  Expected API endpoint: GET /api/notifications/
+  
+  Expected response format:
+  {
+    data: [
+      {
+        id: 1,
+        icon: "flaticon-briefcase",
+        text: "New cleaning job in ",
+        highlight: "Downtown Office",
+        time: "1 hour ago"
+      }
+    ]
+  }
+*/

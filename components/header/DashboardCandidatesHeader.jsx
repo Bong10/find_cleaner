@@ -6,24 +6,52 @@ import { useEffect, useState } from "react";
 import candidatesMenuData from "../../data/candidatesMenuData";
 import HeaderNavContent from "./HeaderNavContent";
 import { isActiveLink } from "../../utils/linkActiveChecker";
-
 import { usePathname } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { performLogout } from "@/store/slices/authSlice";
+
+// resolve relative media paths against your API base (if backend returns "/media/..")
+const API_BASE =
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_BASE_URL
+    ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, "")
+    : "") || "";
+
+const resolveMediaUrl = (path) => {
+  if (!path) return "";
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
+};
+
 const DashboardCandidatesHeader = () => {
     const [navbar, setNavbar] = useState(false);
+    const dispatch = useDispatch();
+    const pathname = usePathname();
 
-
-
-    const changeBackground = () => {
-        if (window.scrollY >= 0) {
-            setNavbar(true);
-        } else {
-            setNavbar(false);
-        }
-    };
+    const { isAuthenticated, user } = useSelector((s) => s.auth);
 
     useEffect(() => {
+        const changeBackground = () => setNavbar(window.scrollY >= 0);
+        changeBackground();
         window.addEventListener("scroll", changeBackground);
+        return () => window.removeEventListener("scroll", changeBackground);
     }, []);
+
+    // avatar from backend (fallback to candidate placeholder)
+    let avatarSrc = "/images/resource/candidate-1.png";
+    if (user?.profile_picture) {
+        const abs = resolveMediaUrl(user.profile_picture);
+        if (abs) avatarSrc = abs;
+    }
+
+    const handleLogoutClick = async (e) => {
+        // Intercept ONLY the Logout item click
+        e.preventDefault();
+        try {
+            await dispatch(performLogout());
+        } finally {
+            if (typeof window !== "undefined") window.location.replace("/");
+        }
+    };
 
     return (
         // <!-- Main Header-->
@@ -34,29 +62,36 @@ const DashboardCandidatesHeader = () => {
         >
             <div className="container-fluid">
                 {/* <!-- Main box --> */}
-                <div className="main-box">
-                    {/* <!--Nav Outer --> */}
-                    <div className="nav-outer">
-                        <div className="logo-box">
-                            <div className="logo">
-                                <Link href="/">
-                                    <Image
-                                        alt="brand"
-                                        src="/images/logo-white.svg"
-                                        width={154}
-                                        height={50}
-                                        priority
-                                    />
-                                </Link>
-                            </div>
+                <div className="main-box" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {/* Logo Box - Left Side */}
+                    <div className="logo-box">
+                        <div className="logo">
+                            <Link href="/">
+                                <Image
+                                    alt="brand"
+                                    src="/images/logo.png"
+                                    width={54}
+                                    height={40}
+                                    priority
+                                />
+                            </Link>
                         </div>
-                        {/* End .logo-box */}
+                    </div>
+                    {/* End .logo-box */}
 
+                    {/* Nav Outer - Center */}
+                    <div className="nav-outer" style={{ 
+                        position: 'absolute',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        margin: '0'
+                    }}>
                         <HeaderNavContent />
                         {/* <!-- Main Menu End--> */}
                     </div>
                     {/* End .nav-outer */}
 
+                    {/* Outer Box - Right Side */}
                     <div className="outer-box">
                         <button className="menu-btn">
                             <span className="count">1</span>
@@ -80,34 +115,35 @@ const DashboardCandidatesHeader = () => {
                                 <Image
                                     alt="avatar"
                                     className="thumb"
-                                    src="/images/resource/candidate-1.png"
+                                    src={avatarSrc}
                                     width={50}
                                     height={50}
+                                    style={{ objectFit: 'cover', borderRadius: '50%' }}
                                 />
                                 <span className="name">My Account</span>
                             </a>
 
                             <ul className="dropdown-menu">
-                                {candidatesMenuData.map((item) => (
-                                    <li
-                                        className={`${
-                                            isActiveLink(
-                                                item.routePath,
-                                                usePathname()
-                                            )
-                                                ? "active"
-                                                : ""
-                                        } mb-1`}
-                                        key={item.id}
-                                    >
-                                        <Link href={item.routePath}>
-                                            <i
-                                                className={`la ${item.icon}`}
-                                            ></i>{" "}
-                                            {item.name}
-                                        </Link>
-                                    </li>
-                                ))}
+                                {candidatesMenuData.map((item) => {
+                                    const isActive = isActiveLink(item.routePath, pathname);
+                                    const isLogout = item.name === "Logout" || item.id === 10;
+
+                                    return (
+                                        <li
+                                            className={`${isActive ? "active" : ""} mb-1`}
+                                            key={item.id}
+                                        >
+                                            {/* Keep Link markup; intercept click for Logout only */}
+                                            <Link 
+                                                href={item.routePath}
+                                                onClick={isLogout ? handleLogoutClick : undefined}
+                                            >
+                                                <i className={`la ${item.icon}`}></i>{" "}
+                                                {item.name}
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         </div>
                         {/* End dropdown */}

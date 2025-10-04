@@ -8,7 +8,7 @@ import {
   setAvatarFile,
   uploadAvatar,
   deleteAvatar,
-  loadCleanerProfile,
+  loadCompleteCleanerProfile,
 } from "@/store/slices/cleanerProfileSlice";
 
 export default function LogoUpload() {
@@ -21,8 +21,8 @@ export default function LogoUpload() {
   // 👉 ensure state is hydrated after a full page reload
   useEffect(() => {
     if (status === "idle") {
-      console.debug("[LogoUpload] boot → loadCleanerProfile()");
-      dispatch(loadCleanerProfile());
+      console.debug("[LogoUpload] boot → loadCompleteCleanerProfile()");
+      dispatch(loadCompleteCleanerProfile());
     }
   }, [status, dispatch]);
 

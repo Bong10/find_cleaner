@@ -1,7 +1,8 @@
 // components/onboarding/steps/EmployerStep1.jsx
 "use client";
 import { useState } from 'react';
-import Image from 'next/image';
+import 'react-phone-number-input/style.css';
+import PhoneInput from 'react-phone-number-input';
 
 const EmployerStep1 = ({ formData, errors, onUpdate }) => {
   const [logoPreview, setLogoPreview] = useState(null);
@@ -56,19 +57,34 @@ const EmployerStep1 = ({ formData, errors, onUpdate }) => {
           </div>
         </div>
 
-        {/* Business/Personal Name */}
+        {/* Name/Business Name Field */}
         <div className="form-group">
           <label className="form-label">
             {formData.account_type === 'business' ? 'Business Name' : 'Full Name'} <span className="required">*</span>
           </label>
           <input
             type="text"
-            value={formData.account_type === 'business' ? formData.business_name : formData.name}
+            value={formData.name || formData.business_name || ''}
             onChange={(e) => onUpdate(formData.account_type === 'business' ? 'business_name' : 'name', e.target.value)}
             className={`form-input ${errors.name || errors.business_name ? 'error' : ''}`}
-            placeholder={formData.account_type === 'business' ? 'Your company name' : 'Your full name'}
+            placeholder={formData.account_type === 'business' ? 'Enter business name' : 'Enter your full name'}
           />
           {(errors.name || errors.business_name) && <span className="error-message">{errors.name || errors.business_name}</span>}
+        </div>
+
+        {/* UPDATED: Phone Number Input - Same as CleanerStep1 */}
+        <div className="form-group">
+          <label className="form-label">
+            Phone Number <span className="required">*</span>
+          </label>
+          <PhoneInput
+            international
+            defaultCountry="GB"
+            value={formData.phone_number || ''}
+            onChange={(value) => onUpdate('phone_number', value)}
+            className={`phone-input-component ${errors.phone_number ? 'error' : ''}`}
+          />
+          {errors.phone_number && <span className="error-message">{errors.phone_number}</span>}
         </div>
 
         {/* Logo/Profile Picture */}
@@ -104,21 +120,6 @@ const EmployerStep1 = ({ formData, errors, onUpdate }) => {
               <p className="upload-hint">JPG, PNG (max 5MB)</p>
             </div>
           </div>
-        </div>
-
-        {/* Phone Number */}
-        <div className="form-group">
-          <label className="form-label">
-            Contact Number <span className="required">*</span>
-          </label>
-          <input
-            type="tel"
-            value={formData.phone_number || ''}
-            onChange={(e) => onUpdate('phone_number', e.target.value)}
-            className={`form-input ${errors.phone_number ? 'error' : ''}`}
-            placeholder="(555) 123-4567"
-          />
-          {errors.phone_number && <span className="error-message">{errors.phone_number}</span>}
         </div>
 
         {/* Email Notifications */}
@@ -414,6 +415,27 @@ const EmployerStep1 = ({ formData, errors, onUpdate }) => {
           color: #ef4444;
           font-size: 13px;
           margin-top: 6px;
+        }
+
+        /* Add the same phone input styles from CleanerStep1 */
+        :global(.phone-input-component .PhoneInputInput) {
+          padding: 12px 16px !important;
+          border: 2px solid #e5e7eb !important;
+          border-radius: 8px !important;
+          font-size: 16px !important;
+          transition: all 0.3s ease !important;
+          outline: none !important;
+          width: 100%;
+        }
+        :global(.phone-input-component .PhoneInputInput:focus) {
+          border-color: #4b9b97 !important;
+          box-shadow: 0 0 0 3px rgba(75, 155, 151, 0.1) !important;
+        }
+        :global(.phone-input-component.error .PhoneInputInput) {
+          border-color: #ef4444 !important;
+        }
+        :global(.PhoneInputCountrySelect) {
+          margin-right: 8px;
         }
 
         @media (max-width: 640px) {

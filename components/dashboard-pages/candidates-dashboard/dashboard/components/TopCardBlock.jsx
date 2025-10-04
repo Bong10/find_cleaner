@@ -1,30 +1,47 @@
+'use client';
+import { useSelector } from "react-redux";
+import { 
+  selectAppliedJobsCount,
+  selectJobAlertsCount, 
+  selectMessagesCount,
+  selectShortlistCount,
+  selectMetricsLoading
+} from '@/store/slices/metricsSlice';
+
 const TopCardBlock = () => {
+  // Use selectors instead of direct state access
+  const appliedJobs = useSelector(selectAppliedJobsCount);
+  const jobAlerts = useSelector(selectJobAlertsCount);
+  const messages = useSelector(selectMessagesCount);
+  const shortlist = useSelector(selectShortlistCount);
+  const loading = useSelector(selectMetricsLoading);
+
   const cardContent = [
     {
       id: 1,
       icon: "flaticon-briefcase",
-      countNumber: "22",
+      countNumber: loading ? "..." : String(appliedJobs),
       metaName: "Applied Jobs",
       uiClass: "ui-blue",
     },
     {
       id: 2,
       icon: "la-file-invoice",
-      countNumber: "9382",
+      countNumber: loading ? "..." : String(jobAlerts),
       metaName: "Job Alerts",
       uiClass: "ui-red",
     },
     {
       id: 3,
       icon: "la-comment-o",
-      countNumber: "74",
+      countNumber: loading ? "..." : String(messages),
       metaName: "Messages",
       uiClass: "ui-yellow",
     },
     {
       id: 4,
       icon: "la-bookmark-o",
-      countNumber: "32",
+      countNumber: loading ? "..." : String(shortlist),
       metaName: "Shortlist",
       uiClass: "ui-green",
     },

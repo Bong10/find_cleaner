@@ -93,7 +93,7 @@ const EmployerStep3 = ({ formData, errors, onUpdate }) => {
           <div className="budget-slider">
             <div className="budget-inputs">
               <div className="budget-input-group">
-                <span className="currency">$</span>
+                <span className="currency">£</span>
                 <input
                   type="number"
                   value={formData.budget_min || ''}
@@ -105,7 +105,7 @@ const EmployerStep3 = ({ formData, errors, onUpdate }) => {
               </div>
               <span className="budget-separator">to</span>
               <div className="budget-input-group">
-                <span className="currency">$</span>
+                <span className="currency">£</span>
                 <input
                   type="number"
                   value={formData.budget_max || ''}
@@ -116,7 +116,7 @@ const EmployerStep3 = ({ formData, errors, onUpdate }) => {
                 />
               </div>
             </div>
-            <p className="budget-note">Average rate: $25-35/hour for 2-3 hours</p>
+            <p className="budget-note">Average rate: £25-35/hour for 2-3 hours</p>
           </div>
         </div>
 

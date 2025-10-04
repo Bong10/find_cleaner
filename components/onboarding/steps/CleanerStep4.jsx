@@ -36,7 +36,7 @@ const CleanerStep4 = ({ formData, errors, onUpdate }) => {
             <div className="suggestion-icon">💡</div>
             <div className="suggestion-content">
               <p className="suggestion-title">Suggested rate for your experience:</p>
-              <p className="suggestion-range">${suggested.min} - ${suggested.max} per hour</p>
+              <p className="suggestion-range">£{suggested.min} - £{suggested.max} per hour</p>
               <p className="suggestion-note">Based on {formData.years_of_experience || '0'} years of experience</p>
             </div>
           </div>
@@ -175,15 +175,15 @@ const CleanerStep4 = ({ formData, errors, onUpdate }) => {
           <div className="earnings-grid">
             <div className="earning-item">
               <span className="earning-label">Per Day (8 hours)</span>
-              <span className="earning-amount">${(formData.hourly_rate || 25) * 8}</span>
+              <span className="earning-amount">£{(formData.hourly_rate || 25) * 8}</span>
             </div>
             <div className="earning-item">
               <span className="earning-label">Per Week (40 hours)</span>
-              <span className="earning-amount">${(formData.hourly_rate || 25) * 40}</span>
+              <span className="earning-amount">£{(formData.hourly_rate || 25) * 40}</span>
             </div>
             <div className="earning-item">
               <span className="earning-label">Per Month (160 hours)</span>
-              <span className="earning-amount highlight">${(formData.hourly_rate || 25) * 160}</span>
+              <span className="earning-amount highlight">£{(formData.hourly_rate || 25) * 160}</span>
             </div>
           </div>
         </div>
