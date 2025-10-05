@@ -14,61 +14,55 @@ const Notification = () => {
     try {
       // TODO: Uncomment when backend endpoint is ready
       // const response = await getNotifications();
-      // setNotifications(response?.data || []);
+      // const data = response?.data || [];
+      // setNotifications(data);
       
       // For now, use default notifications for cleaners
+      // To test empty state, set this to []
       const defaultNotifications = [
-        {
-          id: 1,
-          icon: "flaticon-briefcase",
-          text: "New cleaning job in ",
-          highlight: "Downtown Office",
-          time: "1 hour ago",
-        },
-        {
-          id: 2,
-          icon: "flaticon-bookmark",
-          text: "Employer saved your ",
-          highlight: "Cleaner Profile",
-          time: "2 hours ago",
-        },
-        {
-          id: 3,
-          icon: "flaticon-envelope",
-          text: "Message about ",
-          highlight: "House Cleaning Job",
-          time: "3 hours ago",
-        },
-        {
-          id: 4,
-          icon: "flaticon-envelope",
-          text: "Your application viewed for ",
-          highlight: "Office Cleaning",
-          time: "5 hours ago",
-        },
-        {
-          id: 5,
-          icon: "flaticon-envelope",
-          text: "Job match: ",
-          highlight: "Hotel Housekeeping",
-          time: "1 day ago",
-        },
+        // {
+        //   id: 1,
+        //   icon: "flaticon-briefcase",
+        //   text: "New cleaning job in ",
+        //   highlight: "Downtown Office",
+        //   time: "1 hour ago",
+        // },
+        // {
+        //   id: 2,
+        //   icon: "flaticon-bookmark",
+        //   text: "Employer saved your ",
+        //   highlight: "Cleaner Profile",
+        //   time: "2 hours ago",
+        // },
+        // {
+        //   id: 3,
+        //   icon: "flaticon-envelope",
+        //   text: "Message about ",
+        //   highlight: "House Cleaning Job",
+        //   time: "3 hours ago",
+        // },
+        // {
+        //   id: 4,
+        //   icon: "flaticon-eye",
+        //   text: "Your application viewed for ",
+        //   highlight: "Office Cleaning",
+        //   time: "5 hours ago",
+        // },
+        // {
+        //   id: 5,
+        //   icon: "flaticon-bell",
+        //   text: "Job match: ",
+        //   highlight: "Hotel Housekeeping",
+        //   time: "1 day ago",
+        // },
       ];
 
       setNotifications(defaultNotifications);
       
     } catch (error) {
       console.error('Error fetching notifications:', error);
-      // On error, still show default notification
-      setNotifications([
-        {
-          id: 1,
-          icon: "flaticon-briefcase",
-          text: "New cleaning job in ",
-          highlight: "Your Area",
-          time: "1 hour ago",
-        }
-      ]);
+      // On error, set empty array to show "no notifications" message
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -81,23 +75,40 @@ const Notification = () => {
       </div>
       <div className="widget-content">
         <ul className="notification-list">
-          {notifications.map((item) => (
-            <li key={item.id}>
+          {notifications.length === 0 ? (
+            <li style={{ 
+              textAlign: 'center', 
+              padding: '20px',
+              color: '#999' 
+            }}>
               <span 
-                className={`icon ${item.icon}`}
                 style={{ 
-                  fontSize: '18px',
+                  fontSize: '24px',
                   marginRight: '10px',
+                  opacity: '0.5'
                 }}
               ></span>
-              {item.text}
-              <strong>{item.highlight}</strong>
-              {' '}
-              <Link href="#" className="colored" style={{ marginLeft: '5px' }}>
-                {item.time}
-              </Link>
+              No notifications available
             </li>
-          ))}
+          ) : (
+            notifications.map((item) => (
+              <li key={item.id}>
+                <span 
+                  className={`icon ${item.icon}`}
+                  style={{ 
+                    fontSize: '18px',
+                    marginRight: '10px',
+                  }}
+                ></span>
+                {item.text}
+                <strong>{item.highlight}</strong>
+                {' '}
+                <Link href="#" className="colored" style={{ marginLeft: '5px' }}>
+                  {item.time}
+                </Link>
+              </li>
+            ))
+          )}
         </ul>
       </div>
     </>

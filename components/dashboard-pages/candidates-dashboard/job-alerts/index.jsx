@@ -1,3 +1,5 @@
+"use client";
+
 import MobileMenu from "../../../header/MobileMenu";
 import LoginPopup from "../../../common/form/login/LoginPopup";
 import DashboardCandidatesSidebar from "../../../header/DashboardCandidatesSidebar";
@@ -28,7 +30,7 @@ const index = () => {
       {/* <!-- Dashboard --> */}
       <section className="user-dashboard">
         <div className="dashboard-outer">
-          <BreadCrumb title="Job Alerts!" />
+          <BreadCrumb title="All Notifications" />
           {/* breadCrumb */}
 
           <MenuToggler />

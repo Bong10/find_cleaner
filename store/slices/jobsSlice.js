@@ -1,6 +1,6 @@
 // store/slices/jobsSlice.js
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { createJob } from "@/services/jobsService";
+import { createJob, getJob } from "@/services/jobsService";
 import { toast } from "react-toastify";
 
 /**
@@ -64,6 +64,11 @@ const initialState = {
     //   { id: 6, name: "React",         value: "react" },
     // ],
   },
+
+  // NEW: Store for fetched jobs
+  fetchedJobs: {},
+  fetchingJobs: {},
+  fetchErrors: {},
 };
 
 // ===== existing async (unchanged) =====
@@ -108,6 +113,22 @@ export const submitJob = createAsyncThunk(
       const msg = err?.message || "Failed to post job";
       toast.error(msg);
       return rejectWithValue({ detail: msg });
+    }
+  }
+);
+
+// NEW: Async thunk for fetching a single job
+export const fetchJobById = createAsyncThunk(
+  "jobs/fetchById",
+  async (jobId, { rejectWithValue }) => {
+    try {
+      const { data } = await getJob(jobId);
+      return { jobId, data };
+    } catch (error) {
+      return rejectWithValue({ 
+        jobId, 
+        error: error?.message || "Failed to fetch job" 
+      });
     }
   }
 );
@@ -176,6 +197,22 @@ const jobsSlice = createSlice({
         state.submitting = false;
         state.error = action.payload || { detail: "Failed to post job" };
         if (state.error?.detail) toast.error(state.error.detail);
+      })
+      // NEW: Handle fetchJobById
+      .addCase(fetchJobById.pending, (state, action) => {
+        const jobId = action.meta.arg;
+        state.fetchingJobs[jobId] = true;
+        state.fetchErrors[jobId] = null;
+      })
+      .addCase(fetchJobById.fulfilled, (state, action) => {
+        const { jobId, data } = action.payload;
+        state.fetchedJobs[jobId] = data;
+        state.fetchingJobs[jobId] = false;
+      })
+      .addCase(fetchJobById.rejected, (state, action) => {
+        const { jobId, error } = action.payload || {};
+        state.fetchingJobs[jobId] = false;
+        state.fetchErrors[jobId] = error || "Failed to fetch job";
       });
   },
 });
@@ -188,6 +225,11 @@ export const {
   datePostCheck, clearDatePostToggle,
   experienceLavelCheck, clearExperienceToggle,
 } = jobsSlice.actions;
+
+// NEW: Selectors for fetched jobs
+export const selectJobById = (state, jobId) => state.jobs.fetchedJobs[jobId];
+export const selectJobLoading = (state, jobId) => state.jobs.fetchingJobs[jobId];
+export const selectJobError = (state, jobId) => state.jobs.fetchErrors[jobId];
 
 // selectors
 export const selectJobForm        = (s) => s.jobs.form;

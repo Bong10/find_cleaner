@@ -3,7 +3,9 @@ import LoginPopup from "../../../common/form/login/LoginPopup";
 import DashboardCandidatesSidebar from "../../../header/DashboardCandidatesSidebar";
 import BreadCrumb from "../../BreadCrumb";
 import CopyrightFooter from "../../CopyrightFooter";
-import PackageDataTable from "./components/PackageDataTable";
+import CurrentSubscription from "./components/CurrentSubscription";
+import SubscriptionPlans from "./components/SubscriptionPlans";
+import BillingHistory from "./components/BillingHistory";
 import DashboardCandidatesHeader from "../../../header/DashboardCandidatesHeader";
 import MenuToggler from "../../MenuToggler";
 
@@ -28,7 +30,7 @@ const index = () => {
       {/* <!-- Dashboard --> */}
       <section className="user-dashboard">
         <div className="dashboard-outer">
-          <BreadCrumb title="Packages!" />
+          <BreadCrumb title="My Subscription" />
           {/* breadCrumb */}
 
           <MenuToggler />
@@ -36,22 +38,24 @@ const index = () => {
 
           <div className="row">
             <div className="col-lg-12">
-              <div className="ls-widget">
-                <div className="tabs-box">
-                  <div className="widget-title">
-                    <h4>My Packages</h4>
-                  </div>
-                  {/* End widget-title */}
+              {/* Current Subscription Status */}
+              <CurrentSubscription />
+            </div>
+          </div>
+          {/* End .row */}
 
-                  <div className="widget-content">
-                    <div className="table-outer">
-                      <PackageDataTable />
-                    </div>
-                  </div>
-                  {/* End widget-content */}
-                </div>
-              </div>
-              {/* <!-- Ls widget --> */}
+          <div className="row">
+            <div className="col-lg-12">
+              {/* Available Plans */}
+              <SubscriptionPlans />
+            </div>
+          </div>
+          {/* End .row */}
+
+          <div className="row">
+            <div className="col-lg-12">
+              {/* Billing History */}
+              <BillingHistory />
             </div>
           </div>
           {/* End .row */}

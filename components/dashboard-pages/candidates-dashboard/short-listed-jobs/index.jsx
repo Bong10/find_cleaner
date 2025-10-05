@@ -1,13 +1,20 @@
+"use client";
+
 import MobileMenu from "../../../header/MobileMenu";
 import LoginPopup from "../../../common/form/login/LoginPopup";
 import DashboardCandidatesSidebar from "../../../header/DashboardCandidatesSidebar";
 import BreadCrumb from "../../BreadCrumb";
 import CopyrightFooter from "../../CopyrightFooter";
 import JobFavouriteTable from "./components/JobFavouriteTable";
+import ShortlistDetails from "./components/ShortlistDetails";
 import DashboardCandidatesHeader from "../../../header/DashboardCandidatesHeader";
 import MenuToggler from "../../MenuToggler";
+import { useSearchParams } from "next/navigation";
 
-const index = () => {
+const Index = () => {
+  const search = useSearchParams();
+  const shortlistId = search.get("shortlist");
+
   return (
     <div className="page-wrapper dashboard">
       <span className="header-span"></span>
@@ -28,7 +35,10 @@ const index = () => {
       {/* <!-- Dashboard --> */}
       <section className="user-dashboard">
         <div className="dashboard-outer">
-          <BreadCrumb title="Shortlisted jobs!" />
+          <BreadCrumb
+            title={shortlistId ? "Shortlisted Job Details" : "My Shortlisted Jobs"}
+            subtitle={shortlistId ? "View details of your shortlisted position" : "Track and manage your favorite cleaning positions"}
+          />
           {/* breadCrumb */}
 
           <MenuToggler />
@@ -38,7 +48,7 @@ const index = () => {
             <div className="col-lg-12">
               {/* <!-- Ls widget --> */}
               <div className="ls-widget">
-                <JobFavouriteTable />
+                {shortlistId ? <ShortlistDetails /> : <JobFavouriteTable />}
               </div>
             </div>
           </div>
@@ -55,4 +65,4 @@ const index = () => {
   );
 };
 
-export default index;
+export default Index;
