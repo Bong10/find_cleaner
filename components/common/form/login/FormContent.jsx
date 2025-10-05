@@ -106,17 +106,21 @@ const FormContent = () => {
 
       // 3) toast + cleanup overlays
       toast.success("Login successful");
+      console.log("Login successful");
+
       await closeAndCleanOverlays();
 
+      console.log("Login successful after close and clean");
+      
       // 4) route by role
       switch (role) {
-        case "cleaner":
+        case "Cleaner":
           router.push("/candidates-dashboard/dashboard");
           break;
-        case "employer":
+        case "Employer":
           router.push("/employers-dashboard/dashboard");
           break;
-        case "admin":
+        case "Admin":
           router.push("/admin-dashboard");
           break;
         default:

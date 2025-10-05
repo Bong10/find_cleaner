@@ -6,11 +6,12 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
+        // protocol: 'https',
+        protocol: 'http',
         // hostname: '192.168.1.103',
-        // hostname: '127.0.0.1',
-        hostname: 'cgsabiozard.co.uk',
-        // port: '8000',
+        hostname: '127.0.0.1',
+        // hostname: 'cgsabiozard.co.uk',
+        port: '8000',
         pathname: '/media/**',
       },
     ],
