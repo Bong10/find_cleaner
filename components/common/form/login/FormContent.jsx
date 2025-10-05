@@ -167,58 +167,86 @@ const closeAndCleanOverlays = async () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isLoading) return; // guard double-submits
-    setIsLoading(true);
+  e.preventDefault();
+  if (isLoading) return;
+  setIsLoading(true);
 
+  try {
+    // 1) attempt login
+    console.log("🔐 Attempting login...");
+    const loginResult = await dispatch(
+      loginUser({
+        email: formData.email.trim(),
+        password: formData.password,
+      })
+    ).unwrap();
+    console.log("✅ Login successful, result:", loginResult);
+
+    // 2) fetch the current user to get role
+    console.log("👤 Fetching current user...");
+    let user;
     try {
-      // 1) attempt login
-      await dispatch(
-        loginUser({
-          email: formData.email.trim(),
-          password: formData.password,
-        })
-      ).unwrap();
-
-      // 2) fetch the current user to get role
-      const user = await dispatch(fetchCurrentUser()).unwrap();
-      const role = user?.role;
-
-      // 3) toast + cleanup overlays
-      toast.success("Login successful");
-
-      console.log("Login successful");
-
-      await closeAndCleanOverlays();
-
-      console.log("Login successful after close and clean");
-
-      // 4) route by role
-      switch (role) {
-        case "cleaner":
-          router.push("/candidates-dashboard/dashboard");
-          break;
-        case "employer":
-          router.push("/employers-dashboard/dashboard");
-          break;
-        case "admin":
-          router.push("/admin-dashboard");
-          break;
-        default:
-          router.push("/");
-      }
-    } catch (err) {
-      const msg = extractErrMsg(err);
-      const friendly =
-        msg === "No active account found with the given credentials"
-          ? "Incorrect email or password"
-          : msg;
-      toast.error(friendly);
-    } finally {
-      setIsLoading(false);
+      user = await dispatch(fetchCurrentUser()).unwrap();
+      console.log("✅ User fetched successfully:", user);
+    } catch (fetchError) {
+      console.error("❌ Failed to fetch user:", fetchError);
+      throw fetchError;
     }
-  };
+    
+    const role = user?.role;
+    console.log("👤 User role:", role);
+    console.log("👤 Full user object:", JSON.stringify(user, null, 2));
 
+    // 3) toast + cleanup overlays
+    toast.success("Login successful");
+    console.log("🧹 Starting cleanup...");
+    await closeAndCleanOverlays();
+    console.log("✅ Cleanup completed");
+
+    // 4) route by role
+    console.log("🚀 Starting navigation for role:", role);
+    switch (role) {
+      case "cleaner":
+        console.log("➡️ Navigating to cleaner dashboard: /candidates-dashboard/dashboard");
+        router.push("/candidates-dashboard/dashboard");
+        console.log("✅ Navigation initiated to cleaner dashboard");
+        break;
+      case "employer":
+        console.log("➡️ Navigating to employer dashboard: /employers-dashboard/dashboard");
+        router.push("/employers-dashboard/dashboard");
+        console.log("✅ Navigation initiated to employer dashboard");
+        break;
+      case "admin":
+        console.log("➡️ Navigating to admin dashboard: /admin-dashboard");
+        router.push("/admin-dashboard");
+        console.log("✅ Navigation initiated to admin dashboard");
+        break;
+      default:
+        console.log("⚠️ No matching role or role is undefined/null");
+        console.log("➡️ Navigating to home: /");
+        router.push("/");
+        console.log("✅ Navigation initiated to home");
+    }
+    console.log("🎉 handleSubmit completed successfully");
+    
+  } catch (err) {
+    console.error("❌ Login flow error:", err);
+    console.error("Error type:", err?.constructor?.name);
+    console.error("Error message:", err?.message);
+    console.error("Error stack:", err?.stack);
+    console.error("Full error object:", err);
+    
+    const msg = extractErrMsg(err);
+    const friendly =
+      msg === "No active account found with the given credentials"
+        ? "Incorrect email or password"
+        : msg;
+    toast.error(friendly);
+  } finally {
+    console.log("🔄 Setting isLoading to false");
+    setIsLoading(false);
+  }
+};
   return (
     <div className="form-inner">
       <h3>Login to TidyLinker</h3>
