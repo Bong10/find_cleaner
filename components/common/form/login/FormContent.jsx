@@ -206,17 +206,17 @@ const closeAndCleanOverlays = async () => {
     // 4) route by role
     console.log("🚀 Starting navigation for role:", role);
     switch (role) {
-      case "cleaner":
+      case "Cleaner":
         console.log("➡️ Navigating to cleaner dashboard: /candidates-dashboard/dashboard");
         router.push("/candidates-dashboard/dashboard");
         console.log("✅ Navigation initiated to cleaner dashboard");
         break;
-      case "employer":
+      case "Employer":
         console.log("➡️ Navigating to employer dashboard: /employers-dashboard/dashboard");
         router.push("/employers-dashboard/dashboard");
         console.log("✅ Navigation initiated to employer dashboard");
         break;
-      case "admin":
+      case "Admin":
         console.log("➡️ Navigating to admin dashboard: /admin-dashboard");
         router.push("/admin-dashboard");
         console.log("✅ Navigation initiated to admin dashboard");
