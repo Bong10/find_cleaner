@@ -35,51 +35,131 @@ const FormContent = () => {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const closeAndCleanOverlays = async () => {
-    try {
-      const bs = typeof window !== "undefined" ? window.bootstrap : null;
-
-      const candidateIds = [
-        "loginPopupModal",
-        "registerModal",
-        "mobileMenu",
-        "offcanvasMenu",
-      ];
-
-      candidateIds.forEach((id) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-
-        if (bs?.Modal && el.classList.contains("modal")) {
-          const inst = bs.Modal.getInstance(el) || new bs.Modal(el);
-          if (inst.hide) inst.hide();
-        }
-
-        if (bs?.Offcanvas && el.classList.contains("offcanvas")) {
-          const inst = bs.Offcanvas.getInstance(el) || new bs.Offcanvas(el);
-          if (inst.hide) inst.hide();
-        }
-      });
-
-      document
-        .querySelectorAll(
-          ".modal-backdrop, .offcanvas-backdrop, .menu-backdrop, .mmenu-backdrop, .preloader"
-        )
-        .forEach((n) => n.remove());
-
-      document.body.classList.remove(
-        "modal-open",
-        "mobile-menu-visible",
-        "offcanvas-open"
-      );
-      document.body.style.removeProperty("overflow");
-      document.body.style.removeProperty("paddingRight");
-
-      await new Promise((r) => requestAnimationFrame(() => r(null)));
-    } catch {
-      // ignore cleanup errors
+const closeAndCleanOverlays = async () => {
+  console.log("🔧 Starting closeAndCleanOverlays...");
+  
+  try {
+    // Check if Bootstrap is available
+    const bs = typeof window !== "undefined" ? window.bootstrap : null;
+    console.log("Bootstrap available:", !!bs);
+    
+    if (bs) {
+      console.log("Bootstrap version:", bs?.VERSION || "unknown");
     }
-  };
+
+    const candidateIds = [
+      "loginPopupModal",
+      "registerModal",
+      "mobileMenu",
+      "offcanvasMenu",
+    ];
+
+    console.log("Looking for elements with IDs:", candidateIds);
+
+    candidateIds.forEach((id) => {
+      const el = document.getElementById(id);
+      
+      if (!el) {
+        console.log(`  ❌ Element #${id} not found`);
+        return;
+      }
+      
+      console.log(`  ✅ Found element #${id}, classes:`, el.className);
+
+      // Try to close Modal
+      if (bs?.Modal && el.classList.contains("modal")) {
+        console.log(`    Attempting to close modal #${id}...`);
+        try {
+          const inst = bs.Modal.getInstance(el);
+          if (inst) {
+            console.log(`    Found existing Modal instance for #${id}`);
+            inst.hide();
+          } else {
+            console.log(`    Creating new Modal instance for #${id}`);
+            const newInst = new bs.Modal(el);
+            newInst.hide();
+          }
+          console.log(`    ✅ Modal #${id} closed`);
+        } catch (modalErr) {
+          console.error(`    ❌ Error closing modal #${id}:`, modalErr);
+        }
+      }
+
+      // Try to close Offcanvas
+      if (bs?.Offcanvas && el.classList.contains("offcanvas")) {
+        console.log(`    Attempting to close offcanvas #${id}...`);
+        try {
+          const inst = bs.Offcanvas.getInstance(el);
+          if (inst) {
+            console.log(`    Found existing Offcanvas instance for #${id}`);
+            inst.hide();
+          } else {
+            console.log(`    Creating new Offcanvas instance for #${id}`);
+            const newInst = new bs.Offcanvas(el);
+            newInst.hide();
+          }
+          console.log(`    ✅ Offcanvas #${id} closed`);
+        } catch (offcanvasErr) {
+          console.error(`    ❌ Error closing offcanvas #${id}:`, offcanvasErr);
+        }
+      }
+    });
+
+    // Remove backdrop elements
+    console.log("🧹 Cleaning up backdrop elements...");
+    const backdrops = document.querySelectorAll(
+      ".modal-backdrop, .offcanvas-backdrop, .menu-backdrop, .mmenu-backdrop, .preloader"
+    );
+    
+    console.log(`  Found ${backdrops.length} backdrop element(s) to remove`);
+    
+    backdrops.forEach((n, index) => {
+      console.log(`  Removing backdrop ${index + 1}:`, n.className);
+      n.remove();
+    });
+
+    // Clean up body classes
+    console.log("🧹 Cleaning up body classes...");
+    const bodyClassesBefore = document.body.className;
+    console.log("  Body classes before:", bodyClassesBefore || "(none)");
+    
+    document.body.classList.remove(
+      "modal-open",
+      "mobile-menu-visible",
+      "offcanvas-open"
+    );
+    
+    const bodyClassesAfter = document.body.className;
+    console.log("  Body classes after:", bodyClassesAfter || "(none)");
+
+    // Clean up body styles
+    console.log("🧹 Cleaning up body styles...");
+    const overflowBefore = document.body.style.overflow;
+    const paddingRightBefore = document.body.style.paddingRight;
+    console.log("  Body overflow before:", overflowBefore || "(none)");
+    console.log("  Body paddingRight before:", paddingRightBefore || "(none)");
+    
+    document.body.style.removeProperty("overflow");
+    document.body.style.removeProperty("paddingRight");
+    
+    console.log("  Body overflow after:", document.body.style.overflow || "(none)");
+    console.log("  Body paddingRight after:", document.body.style.paddingRight || "(none)");
+
+    // Wait for next frame
+    console.log("⏳ Waiting for next animation frame...");
+    await new Promise((r) => requestAnimationFrame(() => {
+      console.log("✅ Animation frame complete");
+      r(null);
+    }));
+    
+    console.log("✅ closeAndCleanOverlays completed successfully");
+    
+  } catch (error) {
+    console.error("❌ Error in closeAndCleanOverlays:", error);
+    console.error("  Error stack:", error.stack);
+    // Don't re-throw - we want login to continue even if cleanup fails
+  }
+};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
