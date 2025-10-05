@@ -106,7 +106,12 @@ const FormContent = () => {
 
       // 3) toast + cleanup overlays
       toast.success("Login successful");
+
+      console.log("Login successful");
+
       await closeAndCleanOverlays();
+
+      console.log("Login successful after close and clean");
 
       // 4) route by role
       switch (role) {
