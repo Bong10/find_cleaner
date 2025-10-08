@@ -14,8 +14,8 @@ import ApplyJobModalContent from "@/components/job-single-pages/shared-component
 import Image from "next/image";
 
 export const metadata = {
-  title: "Job Single Dyanmic V3 || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Cleaning Job Details || TidyLinker Job Board",
+description: "Explore individual cleaning job listings on TidyLinker. Check job requirements, employer info, and apply directly for verified cleaning opportunities near you."
 };
 
 const JobSingleDynamicV3 = ({ params }) => {

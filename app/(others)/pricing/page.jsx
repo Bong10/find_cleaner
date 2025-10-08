@@ -3,9 +3,8 @@ import dynamic from "next/dynamic";
 import Pricing from "@/components/pages-menu/pricing";
 
 export const metadata = {
-  title: 'Pricing || Superio - Job Borad React NextJS Template',
-  description:
-    'Superio - Job Borad React NextJS Template',
+  title: "Pricing || TidyLinker - Plans & Subscription Options",
+description: "View TidyLinker’s pricing options for cleaners and employers. Transparent plans designed to help you hire or find cleaning work with no hidden fees."
   
 }
 

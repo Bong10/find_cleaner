@@ -1,94 +1,89 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    keyword: "",
-    location: "",
-    destination: {
-        min: 0,
-        max: 100,
-    },
-    category: "",
-    candidateGender: "",
-    datePost: "",
-    experiences: [],
-    qualifications: [],
-    sort: "",
-    perPage: {
-        start: 0,
-        end: 0,
-    },
+  keyword: "",
+  location: "",
+  destination: { min: 0, max: 100 },
+  category: "",
+  candidateType: [],
+  candidateGender: "",
+  datePost: "",
+  experiences: [],
+  qualifications: [],
+  sort: "",
+  perPage: { start: 0, end: 0 },
 };
 
 export const candidateFilterSlice = createSlice({
-    name: "candidate-filter-slice",
-    initialState,
-    reducers: {
-        addKeyword: (state, { payload }) => {
-            state.keyword = payload;
-        },
-        addLocation: (state, { payload }) => {
-            state.location = payload;
-        },
-        addDestination: (state, { payload }) => {
-            state.destination.min = payload.min;
-            state.destination.max = payload.max;
-        },
-        addCategory: (state, { payload }) => {
-            state.category = payload;
-        },
-        addCandidateGender: (state, { payload }) => {
-            state.candidateGender = payload;
-        },
-        addDatePost: (state, { payload }) => {
-            state.datePost = payload;
-        },
-        addExperience: (state, { payload }) => {
-            const isExist = state.experiences.includes(payload);
-            if (!isExist) {
-                state.experiences.push(payload);
-            } else {
-                state.experiences = state.experiences.filter(
-                    (item) => item !== payload
-                );
-            }
-        },
-        clearExperienceF: (state) => {
-            state.experiences = [];
-        },
-        addQualification: (state, { payload }) => {
-            const isExist = state.qualifications.includes(payload);
-            if (!isExist) {
-                state.qualifications.push(payload);
-            } else {
-                state.qualifications = state.qualifications.filter(
-                    (item) => item !== payload
-                );
-            }
-        },
-        clearQualificationF: (state) => {
-            state.qualifications = [];
-        },
-        addSort: (state, { payload }) => {
-            state.sort = payload;
-        },
-        addPerPage: (state, { payload }) => {
-            state.perPage = payload;
-        },
+  name: "candidateFilter",
+  initialState,
+  reducers: {
+    addKeyword: (state, action) => {
+      state.keyword = action.payload;
     },
+    addLocation: (state, action) => {
+      state.location = action.payload;
+    },
+    addDestination: (state, action) => {
+      state.destination = action.payload;
+    },
+    addCategory: (state, action) => {
+      state.category = action.payload;
+    },
+    addCandidateType: (state, action) => {
+      state.candidateType = action.payload;
+    },
+    addCandidateGender: (state, action) => {
+      state.candidateGender = action.payload;
+    },
+    addDatePost: (state, action) => {
+      state.datePost = action.payload;
+    },
+    addExperience: (state, action) => {
+      state.experiences = action.payload;
+    },
+    clearExperienceF: (state) => {
+      state.experiences = [];
+    },
+    addQualifications: (state, action) => {
+      state.qualifications = action.payload;
+    },
+    addSort: (state, action) => {
+      state.sort = action.payload;
+    },
+    addPerPage: (state, action) => {
+      state.perPage = action.payload;
+    },
+    clearAll: (state) => {
+      state.keyword = "";
+      state.location = "";
+      state.destination = { min: 0, max: 100 };
+      state.category = "";
+      state.candidateType = [];
+      state.candidateGender = "";
+      state.datePost = "";
+      state.experiences = [];
+      state.qualifications = [];
+      state.sort = "";
+      state.perPage = { start: 0, end: 0 };
+    },
+  },
 });
 
 export const {
-    addKeyword,
-    addLocation,
-    addDestination,
-    addCategory,
-    addCandidateGender,
-    addDatePost,
-    addExperience,
-    clearExperienceF,
-    addQualification,
-    clearQualificationF,
-    addSort,
-    addPerPage,
+  addKeyword,
+  addLocation,
+  addDestination,
+  addCategory,
+  addCandidateType,
+  addCandidateGender,
+  addDatePost,
+  addExperience,
+  clearExperienceF,
+  addQualifications,
+  addSort,
+  addPerPage,
+  clearAll,
 } = candidateFilterSlice.actions;
+
 export default candidateFilterSlice.reducer;

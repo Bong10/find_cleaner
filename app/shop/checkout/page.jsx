@@ -2,8 +2,8 @@ import dynamic from "next/dynamic";
 import Checkout from "@/components/shop/checkout";
 
 export const metadata = {
-  title: "Checkout || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Checkout || TidyLinker - Secure Payment for Cleaning Services & Plans",
+description: "Complete your TidyLinker purchase securely. Review your selected plans or job postings, enter payment details, and finalize your order with confidence."
 };
 
 const index = () => {

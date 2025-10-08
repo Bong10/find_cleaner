@@ -3,9 +3,8 @@ import dynamic from "next/dynamic";
 import CandidatesList from "@/components/candidates-listing-pages/candidates-list-v2";
 
 export const metadata = {
-  title: 'Candidates List V2 || Superio - Job Borad React NextJS Template',
-  description:
-    'Superio - Job Borad React NextJS Template',
+ title: "Hire Local Cleaners or Find Cleaning Work – TidyLinker",
+description: "Discover professional cleaners near you or find cleaning jobs that match your skills. TidyLinker is the trusted marketplace for connecting cleaners and clients securely."
   
 }
 

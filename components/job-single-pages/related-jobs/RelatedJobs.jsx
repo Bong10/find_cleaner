@@ -44,11 +44,12 @@ const RelatedJobs = () => {
               {/* End .job-info */}
 
               <ul className="job-other-info">
-                {item.jobType.map((val, i) => (
-                  <li key={i} className={`${val.styleClass}`}>
-                    {val.type}
-                  </li>
-                ))}
+                {Array.isArray(item.jobType) &&
+                  item.jobType.map((val, i) => (
+                    <li key={i} className={`${val.styleClass}`}>
+                      {val.type}
+                    </li>
+                  ))}
               </ul>
               {/* End .job-other-info */}
 

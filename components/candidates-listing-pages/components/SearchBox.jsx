@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useEffect, useState } from "react";
@@ -6,29 +5,30 @@ import { useDispatch, useSelector } from "react-redux";
 import { addKeyword } from "../../../features/filter/candidateFilterSlice";
 
 const SearchBox = () => {
-    const { keyword } = useSelector((state) => state.candidateFilter);
-    const [getKeyword, setKeyword] = useState(keyword);
-
     const dispatch = useDispatch();
+    const { keyword } = useSelector((state) => state.candidateFilter) || {};
+    const [localKeyword, setLocalKeyword] = useState(keyword || "");
 
-    // keyword handler
-    const keywordHandler = (e) => {
-        setKeyword(e.target.value);
-    };
-
-    // keyword dispatch
+    // Update local state when Redux state changes
     useEffect(() => {
-        dispatch(addKeyword(getKeyword));
-    }, [dispatch, addKeyword, getKeyword]);
+        setLocalKeyword(keyword || "");
+    }, [keyword]);
+
+    // Handle input change with immediate dispatch
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setLocalKeyword(value);
+        dispatch(addKeyword(value));
+    };
 
     return (
         <>
             <input
                 type="text"
                 name="listing-search"
-                placeholder="Job title, keywords, or company"
-                onChange={keywordHandler}
-                value={keyword}
+                placeholder="Cleaner name or service type"
+                value={localKeyword}
+                onChange={handleInputChange}
             />
             <span className="icon flaticon-search-3"></span>
         </>

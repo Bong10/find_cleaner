@@ -12,9 +12,8 @@ import PrivateMessageBox from "@/components/employer-single-pages/shared-compone
 import Image from "next/image";
 
 export const metadata = {
-  title:
-    "Employers Single Dyanmic V2 || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Employer Profile || TidyLinker - Hire Cleaners & Manage Cleaning Jobs",
+description: "Explore detailed employer profiles on TidyLinker. View job postings, company details, and reviews to connect with trusted clients looking for professional cleaners."
 };
 
 const EmployersSingleV2 = ({ params }) => {

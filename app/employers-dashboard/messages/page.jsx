@@ -2,8 +2,8 @@ import dynamic from "next/dynamic";
 import Messages from "@/components/dashboard-pages/employers-dashboard/messages";
 
 export const metadata = {
-  title: "Messages || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Messages || TidyLinker - Secure Chat for Cleaning Jobs",
+description: "Stay connected on TidyLinker. Send and receive messages between cleaners and employers to coordinate job details quickly and safely."
 };
 
 const index = () => {

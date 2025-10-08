@@ -11,307 +11,217 @@ import FilterSidebar from "./FilterSidebar";
 
 import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addKeyword,
   addLocation,
-  addCategory,
   addDestination,
-  addCandidateGender,
-  addDatePost,
-  addSort,
-  addPerPage,
 } from "../../../features/filter/candidateFilterSlice";
-
-/* -------------------------------------------
-   Dummy Cambridge (UK) cleaners for cards
-   ------------------------------------------- */
-const cambridgeCleaners = [
-  {
-    id: 101,
-    name: "Oliver Smith",
-    designation: "Domestic Cleaner (Level 2)",
-    location: "Cambridge, UK",
-    hourlyRate: 19,
-    gender: "male",
-    category: "Cleaner",
-    created_at: "jan-05-2025",
-    destination: { min: 0, max: 100 },
-    experience: "2-3 years",
-    qualification: "NVQ Level 2",
-    tags: ["Domestic", "Deep Clean", "Level 2", "★ 4.9"],
-    avatar: "/images/resource/candidate-1.png",
-  },
-  {
-    id: 102,
-    name: "Amelia Brown",
-    designation: "End-of-Tenancy Specialist (Level 3)",
-    location: "Cambridge, UK",
-    hourlyRate: 22,
-    gender: "female",
-    category: "Cleaner",
-    created_at: "jan-08-2025",
-    destination: { min: 0, max: 100 },
-    experience: "3-5 years",
-    qualification: "NVQ Level 3",
-    tags: ["End-of-Tenancy", "Kitchens", "Level 3", "★ 5.0"],
-    avatar: "/images/resource/candidate-2.png",
-  },
-  {
-    id: 103,
-    name: "Harry Wilson",
-    designation: "Commercial Office Cleaner",
-    location: "Cambridge, UK",
-    hourlyRate: 21,
-    gender: "male",
-    category: "Cleaner",
-    created_at: "jan-10-2025",
-    destination: { min: 0, max: 100 },
-    experience: "3-5 years",
-    qualification: "NVQ Level 2",
-    tags: ["Office", "After Hours", "Teams", "★ 4.8"],
-    avatar: "/images/resource/candidate-3.png",
-  },
-  {
-    id: 104,
-    name: "Isla Thompson",
-    designation: "Deep Cleaning Specialist",
-    location: "Cambridge, UK",
-    hourlyRate: 24,
-    gender: "female",
-    category: "Cleaner",
-    created_at: "jan-12-2025",
-    destination: { min: 0, max: 100 },
-    experience: "5-7 years",
-    qualification: "NVQ Level 3",
-    tags: ["Deep Clean", "Limescale", "Bathrooms", "★ 4.9"],
-    avatar: "/images/resource/candidate-4.png",
-  },
-  {
-    id: 105,
-    name: "Jack Taylor",
-    designation: "Window & Carpet Cleaning",
-    location: "Cambridge, UK",
-    hourlyRate: 20,
-    gender: "male",
-    category: "Cleaner",
-    created_at: "jan-15-2025",
-    destination: { min: 0, max: 100 },
-    experience: "2-3 years",
-    qualification: "NVQ Level 2",
-    tags: ["Windows", "Carpets", "Steam", "★ 4.7"],
-    avatar: "/images/resource/candidate-5.png",
-  },
-  {
-    id: 106,
-    name: "Sophie Davies",
-    designation: "Regular Domestic Cleaning",
-    location: "Cambridge, UK",
-    hourlyRate: 18,
-    gender: "female",
-    category: "Cleaner",
-    created_at: "jan-16-2025",
-    destination: { min: 0, max: 100 },
-    experience: "1-2 years",
-    qualification: "NVQ Level 2",
-    tags: ["Weekly", "Bi-weekly", "Eco", "★ 4.6"],
-    avatar: "/images/resource/candidate-6.png",
-  },
-  {
-    id: 107,
-    name: "George Evans",
-    designation: "After-Party Cleaning",
-    location: "Cambridge, UK",
-    hourlyRate: 23,
-    gender: "male",
-    category: "Cleaner",
-    created_at: "jan-18-2025",
-    destination: { min: 0, max: 100 },
-    experience: "3-5 years",
-    qualification: "NVQ Level 2",
-    tags: ["After-Party", "Odd Hours", "Rubbish Removal", "★ 4.8"],
-    avatar: "/images/resource/candidate-7.png",
-  },
-  {
-    id: 108,
-    name: "Poppy Johnson",
-    designation: "Biohazard Cleanup (Trained)",
-    location: "Cambridge, UK",
-    hourlyRate: 30,
-    gender: "female",
-    category: "Cleaner",
-    created_at: "jan-20-2025",
-    destination: { min: 0, max: 100 },
-    experience: "5-7 years",
-    qualification: "Biohazard Cert",
-    tags: ["Biohazard", "PPE", "Insurance", "★ 5.0"],
-    avatar: "/images/resource/candidate-8.png",
-  },
-  {
-    id: 109,
-    name: "Leo Carter",
-    designation: "Move-in / Move-out",
-    location: "Cambridge, UK",
-    hourlyRate: 21,
-    gender: "male",
-    category: "Cleaner",
-    created_at: "jan-22-2025",
-    destination: { min: 0, max: 100 },
-    experience: "3-5 years",
-    qualification: "NVQ Level 2",
-    tags: ["Move-in", "Move-out", "Team of 2", "★ 4.7"],
-    avatar: "/images/resource/candidate-9.png",
-  },
-  {
-    id: 110,
-    name: "Freya Robinson",
-    designation: "Regular Domestic Cleaning",
-    location: "Cambridge, UK",
-    hourlyRate: 19,
-    gender: "female",
-    category: "Cleaner",
-    created_at: "jan-24-2025",
-    destination: { min: 0, max: 100 },
-    experience: "2-3 years",
-    qualification: "NVQ Level 2",
-    tags: ["Regular", "Eco", "Pets OK", "★ 4.8"],
-    avatar: "/images/resource/candidate-10.png",
-  },
-];
+import { fetchCleaners, setSelectedCleaner } from "@/store/slices/usersSlice";
 
 const Index = () => {
   const dispatch = useDispatch();
+  const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Get cleaners data from Redux store
+  const { cleaners, loading, error } = useSelector((state) => state.users);
 
-  // Redux filter state used by sidebar + topbar
+  // Redux filter state
   const {
     keyword,
     location,
     destination,
-    category,
-    candidateGender,
-    datePost,
     experiences,
-    qualifications,
     sort,
     perPage,
   } = useSelector((state) => state.candidateFilter) || {};
 
   /* ----------------------------------------------------
-   * Prime sidebar filters from the query string
-   * (sidebar remains the only search UI)
+   * Fetch cleaners using Redux thunk
+   * ---------------------------------------------------- */
+  useEffect(() => {
+    dispatch(fetchCleaners());
+  }, [dispatch]);
+
+  // Function to handle cleaner selection
+  const handleViewProfile = (cleaner) => {
+    dispatch(setSelectedCleaner(cleaner));
+    localStorage.setItem('selectedCleaner', JSON.stringify(cleaner));
+    router.push(`/candidates-single-v1/${cleaner.id || cleaner.user?.id}`);
+  };
+
+  /* ----------------------------------------------------
+   * Transform cleaners data to match existing structure
+   * ---------------------------------------------------- */
+  const cleanersData = useMemo(() => {
+    if (!cleaners || cleaners.length === 0) return [];
+    
+    return cleaners.map((cleaner, index) => {
+      const userData = cleaner.user || cleaner;
+      const cleanerName =
+        userData.first_name && userData.last_name
+          ? `${userData.first_name} ${userData.last_name}`
+          : userData.name || userData.email?.split("@")[0] || `Cleaner ${index + 1}`;
+
+      // Map years of experience to our filter values
+      let experienceValue = "entry-level";
+      if (cleaner.years_experience) {
+        if (cleaner.years_experience < 1) experienceValue = "entry-level";
+        else if (cleaner.years_experience <= 2) experienceValue = "1-2-years";
+        else if (cleaner.years_experience <= 5) experienceValue = "2-5-years";
+        else if (cleaner.years_experience <= 10) experienceValue = "5-10-years";
+        else experienceValue = "10-plus-years";
+      }
+
+      // Calculate average rating
+      const reviewCount = cleaner.reviews?.length || cleaner.review_count || 0;
+      const averageRating = cleaner.average_rating || 
+                           (cleaner.reviews && cleaner.reviews.length > 0 
+                             ? cleaner.reviews.reduce((sum, r) => sum + r.rating, 0) / cleaner.reviews.length 
+                             : 0);
+
+      // Create tags
+      const baseTags = cleaner.specializations?.slice(0, 3) || ["Domestic", "Deep Clean", "Professional"];
+      const ratingTag = reviewCount > 0 ? `★ ${averageRating.toFixed(1)}` : "★ 0.0";
+      const tags = [...baseTags, ratingTag];
+
+      // Parse date for sorting
+      let createdDate;
+      if (userData.date_joined) {
+        createdDate = new Date(userData.date_joined);
+      } else if (cleaner.created_at) {
+        createdDate = new Date(cleaner.created_at);
+      } else {
+        // Use index to maintain order for items without dates
+        createdDate = new Date(Date.now() - (index * 86400000)); // Subtract days based on index
+      }
+
+      return {
+        ...cleaner,
+        id: cleaner.id || userData.id,
+        name: cleanerName,
+        reviewCount: reviewCount,
+        averageRating: averageRating.toFixed(1),
+        isVerified: cleaner.is_verified || userData.is_verified || false,
+        location: userData.address || "Cambridge, UK",
+        destination: { min: 0, max: 100 },
+        experience: experienceValue,
+        services: cleaner.services || cleaner.specializations || [],
+        tags: tags,
+        avatar:
+          userData.profile_picture &&
+          (userData.profile_picture.startsWith("http")
+            ? userData.profile_picture
+            : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${userData.profile_picture}`) ||
+          `/images/resource/candidate-${(index % 10) + 1}.png`,
+        createdAt: createdDate,
+        originalIndex: index, // Keep original index for stable sorting
+      };
+    });
+  }, [cleaners]);
+
+  /* ----------------------------------------------------
+   * Initialize filters from URL params
    * ---------------------------------------------------- */
   useEffect(() => {
     const service = searchParams.get("service") || "";
-    const loc = searchParams.get("location") || "Cambridge, UK";
+    const loc = searchParams.get("location") || "";
+    
     if (service) dispatch(addKeyword(service));
     if (loc) dispatch(addLocation(loc));
-    // sensible defaults for this page
-    dispatch(addCategory("Cleaner"));
     dispatch(addDestination({ min: 0, max: 100 }));
-  }, [dispatch, searchParams]);
+  }, []);
 
   /* ----------------------------------------------------
-   * Apply the same filter logic your UI expects
+   * Apply all filters and sorting
    * ---------------------------------------------------- */
-  const keywordFilter = (item) =>
-    keyword !== ""
-      ? item?.name?.toLowerCase().includes(keyword?.toLowerCase()) && item
-      : item;
+  const visible = useMemo(() => {
+    let filtered = [...cleanersData];
 
-  const locationFilter = (item) =>
-    location !== ""
-      ? item?.location?.toLowerCase().includes(location?.toLowerCase())
-      : item;
+    // Keyword filter
+    if (keyword && keyword.trim() !== "") {
+      const searchTerm = keyword.toLowerCase().trim();
+      filtered = filtered.filter(item => {
+        const nameMatch = item.name?.toLowerCase().includes(searchTerm);
+        const servicesMatch = item.services?.some(service => 
+          typeof service === 'string' && service.toLowerCase().includes(searchTerm)
+        );
+        const tagsMatch = item.tags?.some(tag => 
+          typeof tag === 'string' && tag.toLowerCase().includes(searchTerm)
+        );
+        return nameMatch || servicesMatch || tagsMatch;
+      });
+    }
 
-  const destinationFilter = (item) =>
-    item?.destination?.min >= destination?.min &&
-    item?.destination?.max <= destination?.max;
+    // Location filter
+    if (location && location.trim() !== "") {
+      const searchLocation = location.toLowerCase().trim();
+      filtered = filtered.filter(item => 
+        item.location?.toLowerCase().includes(searchLocation)
+      );
+    }
 
-  const categoryFilter = (item) =>
-    category !== ""
-      ? item?.category?.toLocaleLowerCase() === category?.toLocaleLowerCase()
-      : item;
+    // Experience filter
+    if (experiences && experiences.length > 0) {
+      filtered = filtered.filter(item => 
+        experiences.includes(item.experience)
+      );
+    }
 
-  const genderFilter = (item) =>
-    candidateGender !== ""
-      ? item?.gender?.toLocaleLowerCase() ===
-        candidateGender?.toLocaleLowerCase()
-      : item;
+    // Sorting - Fixed to work properly
+    if (sort === "asc") {
+      // Oldest first - sort by date ascending
+      filtered.sort((a, b) => {
+        const dateA = a.createdAt.getTime();
+        const dateB = b.createdAt.getTime();
+        if (dateA === dateB) {
+          // If dates are the same, use original index
+          return a.originalIndex - b.originalIndex;
+        }
+        return dateA - dateB;
+      });
+    } else if (sort === "des") {
+      // Newest first - sort by date descending
+      filtered.sort((a, b) => {
+        const dateA = a.createdAt.getTime();
+        const dateB = b.createdAt.getTime();
+        if (dateA === dateB) {
+          // If dates are the same, use original index (reversed)
+          return b.originalIndex - a.originalIndex;
+        }
+        return dateB - dateA;
+      });
+    } else {
+      // Default sort - maintain original order
+      filtered.sort((a, b) => a.originalIndex - b.originalIndex);
+    }
 
-  const datePostedFilter = (item) =>
-    datePost !== "all" && datePost !== ""
-      ? item?.created_at
-          ?.toLocaleLowerCase()
-          .split(" ")
-          .join("-")
-          .includes(datePost)
-      : item;
+    // Pagination
+    if (perPage && perPage.end > 0) {
+      const start = perPage.start || 0;
+      filtered = filtered.slice(start, start + perPage.end);
+    }
 
-  const experienceFilter = (item) =>
-    experiences?.length !== 0
-      ? experiences?.includes(
-          item?.experience?.split(" ").join("-").toLocaleLowerCase()
-        )
-      : item;
+    return filtered;
+  }, [cleanersData, keyword, location, experiences, sort, perPage]);
 
-  const qualificationFilter = (item) =>
-    qualifications?.length !== 0
-      ? qualifications?.includes(
-          item?.qualification?.split(" ").join("-").toLocaleLowerCase()
-        )
-      : item;
-
-  const sortFn = (a, b) => {
-    if (sort === "des") return a.id > b.id ? -1 : 1; // newest first
-    if (sort === "asc") return a.id < b.id ? -1 : 1; // oldest first
-    return 0; // default
-  };
-
-  const visible = useMemo(
-    () =>
-      cambridgeCleaners
-        ?.filter(keywordFilter)
-        ?.filter(locationFilter)
-        ?.filter(destinationFilter)
-        ?.filter(categoryFilter)
-        ?.filter(genderFilter)
-        ?.filter(datePostedFilter)
-        ?.filter(experienceFilter)
-        ?.filter(qualificationFilter)
-        ?.sort(sortFn)
-        ?.slice(perPage?.start ?? 0, (perPage?.end ?? 0) === 0 ? undefined : perPage.end),
-    [
-      keyword,
-      location,
-      destination,
-      category,
-      candidateGender,
-      datePost,
-      experiences,
-      qualifications,
-      sort,
-      perPage,
-    ]
-  );
+  // Use filterCleaners instead of visible
+  const visibleCleaners = visible;
 
   return (
     <>
-      {/* Header Span */}
-      <span className="header-span"></span>
-
       <LoginPopup />
       <DefaulHeader2 />
       <MobileMenu />
 
-      <Breadcrumb title="Candidates" meta="Candidates" />
+      <Breadcrumb title="Find Cleaners" meta="Cleaners" />
 
       <section className="ls-section">
         <div className="auto-container">
           <div className="row">
-            {/* Offcanvas for mobile/tablet filters */}
             <div
               className="offcanvas offcanvas-start"
               tabIndex="-1"
@@ -323,65 +233,103 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Static sidebar on desktop */}
             <div className="filters-column hidden-1023 col-lg-4 col-md-12 col-sm-12">
               <FilterSidebar />
             </div>
 
-            {/* Content */}
             <div className="content-column col-lg-8 col-md-12 col-sm-12">
               <div className="ls-outer">
-                {/* Top bar: count / sort / per-page / clear (no cards inside) */}
-                <FilterTopBox count={visible?.length || 0} />
+                <FilterTopBox count={visibleCleaners?.length || 0} />
 
-                {/* Candidate cards — keep original template styles */}
-                {visible?.map((c) => (
-                  <div className="candidate-block-three" key={c.id}>
-                    <div className="inner-box">
-                      <div className="content">
-                        <figure className="image">
-                          <Image width={90} height={90} src={c.avatar} alt="candidate" />
-                        </figure>
+                {loading ? (
+                  <div style={{ textAlign: "center", padding: "50px" }}>
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                    <p style={{ marginTop: "20px" }}>Loading cleaners...</p>
+                  </div>
+                ) : error ? (
+                  <div style={{ textAlign: "center", padding: "50px" }}>
+                    <h4>Error loading cleaners</h4>
+                    <p>{error}</p>
+                  </div>
+                ) : visibleCleaners?.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "50px" }}>
+                    <h4>No cleaners found</h4>
+                    <p>Try adjusting your filters or check back later.</p>
+                  </div>
+                ) : (
+                  visibleCleaners?.map((c) => (
+                    <div className="candidate-block-three" key={c.id}>
+                      <div className="inner-box">
+                        <div className="content">
+                          <figure className="image">
+                            <Image
+                              width={90}
+                              height={90}
+                              src={c.avatar}
+                              alt={c.name}
+                              onError={(e) => {
+                                e.target.src = "/images/resource/candidate-1.png";
+                              }}
+                            />
+                          </figure>
 
-                        <h4 className="name">
-                          <Link href={`/cleaner/${c.id}`}>{c.name}</Link>
-                        </h4>
+                          <h4 className="name">
+                            <a 
+                              href="#" 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleViewProfile(c);
+                              }}
+                            >
+                              {c.name}
+                            </a>
+                          </h4>
 
-                        <ul className="candidate-info">
-                          <li className="designation">{c.designation}</li>
-                          <li>
-                            <span className="icon flaticon-map-locator"></span> {c.location}
-                          </li>
-                          <li>
-                            <span className="icon flaticon-money"></span> £{c.hourlyRate} / hour
-                          </li>
-                        </ul>
-
-                        <ul className="post-tags">
-                          {c.tags.map((t, i) => (
-                            <li key={i}>
-                              <a href="#">{t}</a>
+                          <ul className="candidate-info">
+                            <li>
+                              <span className="icon flaticon-map-locator"></span> {c.location}
                             </li>
-                          ))}
-                        </ul>
-                      </div>
+                            {/* Verification Status */}
+                            <li>
+                              {c.isVerified ? (
+                                <span style={{ color: '#52c41a' }}>
+                                  <i className="la la-check-circle"></i> Verified
+                                </span>
+                              ) : (
+                                <span style={{ color: '#696969' }}>
+                                  <i className="la la-times-circle"></i> Not Verified
+                                </span>
+                              )}
+                            </li>
+                          </ul>
 
-                      <div className="btn-box">
-                        <button className="bookmark-btn me-2" aria-label="Bookmark">
-                          <span className="flaticon-bookmark"></span>
-                        </button>
+                          <ul className="post-tags">
+                            {c.tags.map((t, i) => (
+                              <li key={i}>
+                                <a href="#">{t}</a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
 
-                        <Link
-                          href={`/cleaner/${c.id}`}
-                          className="theme-btn btn-style-three"
-                        >
-                          <span className="btn-title">View Profile</span>
-                        </Link>
+                        <div className="btn-box">
+                          <button className="bookmark-btn me-2" aria-label="Bookmark">
+                            <span className="flaticon-bookmark"></span>
+                          </button>
+
+                          <button 
+                            onClick={() => handleViewProfile(c)}
+                            className="theme-btn btn-style-three"
+                          >
+                            <span className="btn-title">View Profile</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-                {/* End cards */}
+                  ))
+                )}
               </div>
             </div>
           </div>

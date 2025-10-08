@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Page Not Found || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "404 Error || TidyLinker - Page Not Found",
+description: "Oops! This page isn’t available. Go back to TidyLinker to discover trusted cleaners and cleaning job opportunities in your area."
 };
 
 const index = () => {

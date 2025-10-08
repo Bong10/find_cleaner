@@ -16,6 +16,14 @@ export const patchCurrentUserMultipart = (formData) =>
 export const getCleanerMe = () => api.get("/api/users/cleaners/me/");
 export const patchCleanerMe = (data) => api.patch("/api/users/cleaners/me/", data);
 
+/** ------- Get all cleaners (for candidates listing) ------- */
+export const getAllCleaners = (params) => {
+  const queryString = params ? `?${new URLSearchParams(params).toString()}` : "";
+  return api.get(`/api/users/cleaners/${queryString}`);
+};
+
+export const getCleanerById = (id) => api.get(`/api/users/cleaners/${id}/`);
+
 /** ----- Jobs and Applications ----- */
 // Get all jobs (this shows which jobs the cleaner has applied to)
 export const getJobs = () => api.get("/api/jobs/");

@@ -1,39 +1,34 @@
 import Link from "next/link";
-import { useEffect, useState } from 'react';
-import { getJobs } from '@/services/cleanerService';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchMyApplications } from '@/store/slices/jobsSlice';
 
 const JobApplied = () => {
-  const [appliedJobs, setAppliedJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { myApplications, applicationsLoading } = useSelector(state => state.jobs);
 
   useEffect(() => {
-    fetchAppliedJobs();
-  }, []);
+    dispatch(fetchMyApplications());
+  }, [dispatch]);
 
-  const fetchAppliedJobs = async () => {
-    try {
-      const response = await getJobs();
-      console.log('Jobs response:', response);
-      
-      // Use ALL jobs from /api/jobs/ as applied jobs
-      const jobs = response?.data || [];
-      setAppliedJobs(jobs);
-      
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-    } finally {
-      setLoading(false);
+  // Get status label and color
+  const getStatusLabel = (status) => {
+    switch(status) {
+      case 'p': return { label: 'Pending', color: '#f59e0b' };
+      case 'a': return { label: 'Accepted', color: '#10b981' };
+      case 'r': return { label: 'Rejected', color: '#ef4444' };
+      default: return { label: 'Unknown', color: '#6b7280' };
     }
   };
 
-  if (loading) {
+  if (applicationsLoading) {
     return <div>Loading applied jobs...</div>;
   }
 
   return (
     <>
       <div className="widget-title">
-        <h4>Jobs Applied Recently ({appliedJobs.length})</h4>
+        <h4>Jobs Applied Recently ({myApplications.length})</h4>
       </div>
       
       <div className="widget-content">
@@ -49,85 +44,97 @@ const JobApplied = () => {
             </thead>
 
             <tbody>
-              {appliedJobs.length === 0 ? (
+              {myApplications.length === 0 ? (
                 <tr>
                   <td colSpan="4" style={{ textAlign: 'center' }}>
                     No jobs applied yet
                   </td>
                 </tr>
               ) : (
-                appliedJobs.map((job) => (
-                  <tr key={job.job_id}>
-                    <td>
-                      <div className="job-block">
-                        <div className="inner-box">
-                          <div className="content">
-                            <span className="company-logo">
-                              {job.employer_logo || job.company_logo || job.image ? (
-                                <img 
-                                  src={job.employer_logo || job.company_logo || job.image} 
-                                  alt="company" 
-                                  style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
-                                  onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextElementSibling.style.display = 'flex';
+                myApplications.map((application) => {
+                  const statusInfo = getStatusLabel(application.status);
+                  return (
+                    <tr key={application.application_id}>
+                      <td>
+                        <div className="job-block">
+                          <div className="inner-box">
+                            <div className="content">
+                              <span className="company-logo">
+                                <div 
+                                  style={{
+                                    width: '50px',
+                                    height: '50px',
+                                    borderRadius: '4px',
+                                    backgroundColor: '#f0f5ff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#1967d2',
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
                                   }}
-                                />
-                              ) : null}
-                              <div 
-                                style={{
-                                  width: '50px',
-                                  height: '50px',
-                                  borderRadius: '4px',
-                                  backgroundColor: '#f0f5ff',
-                                  display: job.employer_logo || job.company_logo || job.image ? 'none' : 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: '#1967d2',
-                                  fontSize: '20px',
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                {job.employer_name ? 
-                                  job.employer_name.charAt(0).toUpperCase() : 
-                                  <span className="flaticon-briefcase"></span>
-                                }
-                              </div>
-                            </span>
-                            <h4>
-                              <Link href={`/job-single-v3/${job.job_id}`}>
-                                {job.title}
-                              </Link>
-                            </h4>
-                            <ul className="job-info">
-                              <li>
-                                <span className="icon flaticon-briefcase"></span>
-                                {job.employer_name || 'Company'}
-                              </li>
-                              <li>
-                                <span className="icon flaticon-map-locator"></span>
-                                {job.location}
-                              </li>
-                            </ul>
+                                >
+                                  {application.job_title ? 
+                                    application.job_title.charAt(0).toUpperCase() : 
+                                    <span className="flaticon-briefcase"></span>
+                                  }
+                                </div>
+                              </span>
+                              <h4>
+                                <Link href={`/job-single-v1/${application.job}`}>
+                                  {application.job_title || 'Untitled Job'}
+                                </Link>
+                              </h4>
+                              <ul className="job-info">
+                                <li>
+                                  <span className="icon flaticon-briefcase"></span>
+                                  {application.employer_name || 'Employer'}
+                                </li>
+                                {application.cover_letter && (
+                                  <li title={application.cover_letter}>
+                                    <span className="icon flaticon-paper-plane"></span>
+                                    {application.cover_letter.substring(0, 30)}...
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>{new Date(job.created_at).toLocaleDateString()}</td>
-                    <td className="status">{job.status === 'o' ? 'Open' : job.status}</td>
-                    <td>
-                      <div className="option-box">
-                        <ul className="option-list">
-                          <li>
-                            <Link href={`/job-single-v3/${job.job_id}`}>
-                              <span className="la la-eye"></span>
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td>{application.date_applied || 'N/A'}</td>
+                      <td>
+                        <span 
+                          className="badge"
+                          style={{ 
+                            backgroundColor: statusInfo.color,
+                            color: '#fff',
+                            padding: '4px 12px',
+                            borderRadius: '4px'
+                          }}
+                        >
+                          {statusInfo.label}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="option-box">
+                          <ul className="option-list">
+                            <li>
+                              <Link 
+                                href={`/job-single-v1/${application.job}`}
+                                onClick={() => {
+                                  // Store application info for the job page
+                                  localStorage.setItem('currentApplication', JSON.stringify(application));
+                                }}
+                              >
+                                <span className="la la-eye"></span>
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

@@ -13,9 +13,8 @@ import AboutVideo from "@/components/candidates-single-pages/shared-components/A
 import Image from "next/image";
 
 export const metadata = {
-  title:
-    "Candidate Single Dyanmic V3 || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+ title: "Cleaner Profile || TidyLinker - Hire Trusted Cleaners Near You",
+description: "View detailed cleaner profiles on TidyLinker, including experience, services offered, hourly rates, and verified reviews. Connect and hire your ideal cleaner today."
 };
 
 const CandidateSingleDynamicV3 = ({ params }) => {
