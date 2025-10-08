@@ -3,9 +3,8 @@ import dynamic from "next/dynamic";
 import BlogList from "@/components/blog-meu-pages/blog-list-v2";
 
 export const metadata = {
-  title: 'Blog List V2 || Superio - Job Borad React NextJS Template',
-  description:
-    'Superio - Job Borad React NextJS Template',
+  title: "TidyLinker Blog Details | Expert Cleaning Advice & Real-Life Job Stories",
+description: "Read detailed cleaning guides, industry insights, and inspiring stories from professionals on TidyLinker — the platform that connects cleaners with real opportunities and clients who care.",
   
 }
 

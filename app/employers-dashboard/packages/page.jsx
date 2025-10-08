@@ -2,8 +2,8 @@ import dynamic from "next/dynamic";
 import Packages from "@/components/dashboard-pages/employers-dashboard/packages";
 
 export const metadata = {
-  title: "Packages || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Packages || TidyLinker - Pricing Plans for Cleaners & Employers",
+description: "Explore TidyLinker’s affordable packages. Choose the right plan to hire trusted cleaners, post cleaning jobs, or boost your visibility on the platform."
 };
 
 const index = () => {

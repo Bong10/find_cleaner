@@ -3,9 +3,8 @@ import dynamic from "next/dynamic";
 import Terms from "@/components/pages-menu/terms";
 
 export const metadata = {
-  title: 'Terms || Superio - Job Borad React NextJS Template',
-  description:
-    'Superio - Job Borad React NextJS Template',
+  title: "Terms || TidyLinker - User Agreement & Platform Policies",
+description: "Review the official TidyLinker terms outlining usage rules, privacy standards, and guidelines for hiring and working through our cleaning job platform."
   
 }
 

@@ -119,3 +119,9 @@ export const listJobs = (params = {}) => {
 
 // Follow absolute DRF `next/previous` URLs
 export const fetchJobsByUrl = (url) => api.get(url);
+
+// Add this function to get employer details
+export const getJobEmployer = async (jobId) => {
+  const response = await api.get(`/api/jobs/${jobId}/employer/`);
+  return response;
+};

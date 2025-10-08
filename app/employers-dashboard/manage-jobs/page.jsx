@@ -2,8 +2,8 @@ import dynamic from "next/dynamic";
 import ManageJobs from "@/components/dashboard-pages/employers-dashboard/manage-jobs";
 
 export const metadata = {
-  title: "Manage Jobs || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+ title: "Manage Jobs || TidyLinker - Cleaning Job Listings Dashboard",
+description: "View and manage all your cleaning job listings on TidyLinker. Keep your posts organized and monitor applications in real time."
 };
 
 const index = () => {

@@ -2,8 +2,8 @@ import dynamic from "next/dynamic";
 import CvManager from "@/components/dashboard-pages/candidates-dashboard/cv-manager";
 
 export const metadata = {
-  title: "CV Manager || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+ title: "CV Manager || TidyLinker - Build Your Cleaning Job Resume",
+description: "Easily manage your cleaner resume and profile on TidyLinker. Highlight your cleaning experience and get noticed by employers hiring near you."
 };
 
 const index = () => {

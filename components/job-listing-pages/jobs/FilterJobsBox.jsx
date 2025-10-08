@@ -20,8 +20,8 @@ import {
 } from "@/store/slices/filterSlice";
 
 // jobs list
-import { clearDatePostToggle } from "@/store/slices/jobsSlice";
 import { fetchPublicJobs } from "@/store/slices/publicJobsSlice";
+import { fetchMyApplications } from "@/store/slices/jobsSlice";
 
 // shortlist
 import {
@@ -61,6 +61,9 @@ const FilterJobsBox = () => {
 
   // ===== jobs slice =====
   const { list, loading, error } = useSelector((s) => s.publicJobs) || {};
+  
+  // ===== applications from jobsSlice =====
+  const { myApplications, applicationsLoading } = useSelector((s) => s.jobs) || {};
 
   // ===== auth (robust) =====
   const auth = useSelector((s) => s.auth) || {};
@@ -84,13 +87,14 @@ const FilterJobsBox = () => {
     ? shortlistState.items
     : [];
 
-  // ===== local cleanerPk cache (we'll also resolve on-demand in click) =====
+  // ===== local cleanerPk cache =====
   const [cleanerPk, setCleanerPk] = useState(null);
   const [cleanerLoaded, setCleanerLoaded] = useState(false);
 
   const dispatch = useDispatch();
+  const router = useRouter();
 
-  // ===== build fetch params (same as before) =====
+  // ===== build fetch params =====
   const params = useMemo(
     () => ({
       keyword,
@@ -111,7 +115,14 @@ const FilterJobsBox = () => {
     if (loadedOnceRef.current) return;
     loadedOnceRef.current = true;
     dispatch(fetchPublicJobs(params));
-  }, [dispatch]); // do not include params to avoid loops
+  }, [dispatch]);
+
+  // ---- Load applications for logged-in cleaners ----
+  useEffect(() => {
+    if (isLoggedIn && isCleaner) {
+      dispatch(fetchMyApplications());
+    }
+  }, [isLoggedIn, isCleaner, dispatch]);
 
   // ---- top search submit ----
   useEffect(() => {
@@ -140,7 +151,7 @@ const FilterJobsBox = () => {
     }
   }, [dispatch, isLoggedIn, isCleaner]);
 
-  // ---- load cleanerPk once (top-level cache) ----
+  // ---- load cleanerPk once ----
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -160,30 +171,13 @@ const FilterJobsBox = () => {
     };
   }, [isLoggedIn, isCleaner, cleanerLoaded]);
 
-  // ---- debug: what we have ----
-  useEffect(() => {
-    if (Array.isArray(list?.results)) {
-      // console.log("[jobs] loaded", list.results);
-    }
-  }, [list]);
-
-  useEffect(() => {
-    // console.log("[shortlist] items", shortlistItems);
-  }, [shortlistItems]);
-
-  // ---- Clear All (unchanged) ----
+  // ---- Check if filters are default ----
   const hasActiveFilters = useMemo(() => {
     const hasKeyword = !!(keyword && keyword.trim());
     const hasLocation = !!(location && location.trim());
-    const hasDestination =
-      destination &&
-      (Number(destination.min) !== 0 || Number(destination.max) !== 100);
     const hasCategory = !!category;
-    const hasJobType = Array.isArray(jobType) && jobType.length > 0;
     const hasDatePosted = !!datePosted && datePosted !== "all";
-    const hasExperience = Array.isArray(experience) && experience.length > 0;
     const hasSalary = !!salary && (salary.min != 10 || salary.max != 30);
-    const hasTag = !!(tag && tag.trim());
     const hasSort = !!sort;
     const hasPerPage =
       perPage && (Number(perPage.start) > 0 || Number(perPage.end) > 0);
@@ -191,29 +185,13 @@ const FilterJobsBox = () => {
     return (
       hasKeyword ||
       hasLocation ||
-      hasDestination ||
       hasCategory ||
-      hasJobType ||
       hasDatePosted ||
-      hasExperience ||
       hasSalary ||
-      hasTag ||
       hasSort ||
       hasPerPage
     );
-  }, [
-    keyword,
-    location,
-    destination,
-    category,
-    jobType,
-    datePosted,
-    experience,
-    salary,
-    tag,
-    sort,
-    perPage,
-  ]);
+  }, [keyword, location, category, datePosted, salary, sort, perPage]);
 
   const clearAll = () => {
     dispatch(addKeyword(""));
@@ -221,39 +199,48 @@ const FilterJobsBox = () => {
     dispatch(addDestination({ min: 0, max: 100 }));
     dispatch(addCategory(""));
     dispatch(addDatePosted("all"));
-    dispatch(clearDatePostToggle());
     dispatch(addSalary({ min: 10, max: 30 }));
     dispatch(addTag(""));
     dispatch(addSort(""));
     dispatch(addPerPage({ start: 0, end: 0 }));
 
-    dispatch(
-      fetchPublicJobs({
-        keyword: "",
-        location: "",
-        destination: { min: 0, max: 100 },
-        category: "",
-        jobType: [],
-        datePosted: "",
-        experience: [],
-        salary: { min: 10, max: 30 },
-        tag: "",
-        sort: "",
-        perPage: { start: 0, end: 0 },
-      })
-    );
+    dispatch(fetchPublicJobs({
+      keyword: "",
+      location: "",
+      destination: { min: 0, max: 100 },
+      category: "",
+      jobType: [],
+      datePosted: "",
+      experience: [],
+      salary: { min: 10, max: 30 },
+      tag: "",
+      sort: "",
+      perPage: { start: 0, end: 0 },
+    }));
   };
 
   const sortHandler = (e) => dispatch(addSort(e.target.value));
   const perPageHandler = (e) => dispatch(addPerPage(JSON.parse(e.target.value)));
 
+  // Function to handle job selection - STORE IN LOCALSTORAGE
+  const handleJobClick = (job) => {
+    // Store the complete job data in localStorage
+    localStorage.setItem('selectedJob', JSON.stringify(job));
+    // Navigate to detail page
+    const jobId = job?.id ?? job?.job_id;
+    router.push(`/job-single-v1/${jobId}`);
+  };
+
   // ---- Job Card ----
   const JobCard = ({ job }) => {
-    const router = useRouter();
-    const dispatch = useDispatch();
-
     const jobId = Number(job?.id ?? job?.job_id ?? NaN);
+    const jobIdString = String(job?.id ?? job?.job_id ?? '');
     const title = job?.title || job?.name || "Untitled Job";
+    
+    // Check if this job has been applied to
+    const hasApplied = myApplications.some(app => 
+      String(app.job) === jobIdString
+    );
 
     const logo =
       job?.employer?.company_logo || job?.company_logo || job?.logo_url || "";
@@ -282,7 +269,7 @@ const FilterJobsBox = () => {
     const hours = job?.hours || job?.estimated_hours || job?.total_hours || null;
     const rate = job?.hourly_rate || job?.rate_per_hour || job?.price_per_hour || null;
     const salaryLabel =
-      (rate ? `${Number(rate)} / hr` : "—") + (hours ? ` • ${Number(hours)} hrs` : "");
+      (rate ? `£${Number(rate)} / hr` : "—") + (hours ? ` • ${Number(hours)} hrs` : "");
 
     // derive shortlisted from slice
     const shortlistRow = Array.isArray(shortlistItems)
@@ -292,12 +279,21 @@ const FilterJobsBox = () => {
 
     const onApply = () => {
       if (!jobId || Number.isNaN(jobId)) return;
-      if (!isLoggedIn) return router.push(`/login?next=/jobs/${jobId}`);
+      // Store job data before navigating
+      localStorage.setItem('selectedJob', JSON.stringify(job));
+      
+      if (!isLoggedIn) return router.push(`/login?next=/job-single-v1/${jobId}`);
       if (!isCleaner) return;
-      router.push(`/jobs/${jobId}?apply=1`);
+      
+      // If already applied, just navigate to view
+      if (hasApplied) {
+        router.push(`/job-single-v1/${jobId}`);
+      } else {
+        router.push(`/job-single-v1/${jobId}?apply=1`);
+      }
     };
 
-    // Fetch cleaner pk on-demand if missing to avoid "cleaner: undefined"
+    // Fetch cleaner pk on-demand if missing
     const ensureCleanerPk = async () => {
       if (cleanerPk) return cleanerPk;
       if (!isLoggedIn || !isCleaner) return null;
@@ -313,20 +309,17 @@ const FilterJobsBox = () => {
 
     const onToggleShortlist = async () => {
       if (!jobId || Number.isNaN(jobId)) {
-        // console.log("[shortlist] invalid jobId", job);
         return;
       }
       if (!isLoggedIn) {
         return router.push(`/login?next=/jobs/${jobId}`);
       }
       if (!isCleaner) {
-        // console.log("[shortlist] only cleaners can shortlist");
         return;
       }
 
       try {
         if (shortlisted) {
-          // REMOVE: use the exact row id; if we somehow don't have it, reload once
           let rowId = shortlistRow?.id || null;
           if (!rowId) {
             const latest = await dispatch(loadShortlist()).unwrap();
@@ -336,25 +329,21 @@ const FilterJobsBox = () => {
             rowId = row?.id || null;
           }
           if (!rowId) {
-            // console.log("[shortlist] cannot resolve row id for delete", { jobId });
             return;
           }
           await dispatch(removeFromShortlist({ id: rowId })).unwrap();
           await dispatch(loadShortlist()).unwrap();
         } else {
-          // ADD: resolve cleaner pk now (prevents cleaner: undefined)
           const cid = await ensureCleanerPk();
           if (!cid) {
-            // console.log("[shortlist] cleanerPk not available");
             return;
           }
           const payload = { job: jobId, cleaner: Number(cid) };
-          // console.log("[shortlist] POST payload", payload);
           await dispatch(addToShortlist(payload)).unwrap();
           await dispatch(loadShortlist()).unwrap();
         }
       } catch (err) {
-        // console.log("[shortlist] add/remove failed:", err);
+        console.error("[shortlist] add/remove failed:", err);
       }
     };
 
@@ -381,7 +370,29 @@ const FilterJobsBox = () => {
             </span>
 
             <h4>
-              <Link href={`/jobs/${jobId}`}>{title}</Link>
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleJobClick(job);
+                }}
+              >
+                {title}
+              </a>
+              {hasApplied && (
+                <span 
+                  className="badge ms-2" 
+                  style={{ 
+                    backgroundColor: '#10b981', 
+                    color: '#fff',
+                    fontSize: '12px',
+                    padding: '4px 8px',
+                    borderRadius: '4px'
+                  }}
+                >
+                  Applied ✓
+                </span>
+              )}
             </h4>
 
             <ul className="job-info">
@@ -416,7 +427,6 @@ const FilterJobsBox = () => {
                 >
                   <span
                     className={shortlisted ? "la la-bookmark" : "la la-bookmark-o"}
-                    // RED icon when shortlisted
                     style={shortlisted ? { color: "#ef4444" } : undefined}
                   ></span>
                 </button>
@@ -427,9 +437,16 @@ const FilterJobsBox = () => {
               type="button"
               onClick={onApply}
               className="theme-btn btn-style-one"
-              style={{ minWidth: 140 }}
+              style={{ 
+                minWidth: 140,
+                ...(hasApplied ? { 
+                  backgroundColor: '#10b981', 
+                  borderColor: '#10b981' 
+                } : {})
+              }}
+              disabled={applicationsLoading}
             >
-              Apply Now
+              {hasApplied ? "View Applied Job" : "Apply Now"}
             </button>
           </div>
         </div>
@@ -481,7 +498,7 @@ const FilterJobsBox = () => {
             >
               Clear All
             </button>
-          ) : undefined}
+          ) : null}
 
           <select value={sort || ""} className="chosen-single form-select" onChange={sortHandler}>
             <option value="">Sort by (default)</option>

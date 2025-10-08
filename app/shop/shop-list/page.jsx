@@ -2,8 +2,8 @@ import dynamic from "next/dynamic";
 import ShopList from "@/components/shop/shop-list";
 
 export const metadata = {
-  title: "Shop List || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Shop List || TidyLinker - Cleaning Tools & Service Packages",
+description: "Browse TidyLinker’s shop to explore cleaning service packages, tools, and premium job posting options for cleaners and employers."
 };
 
 const index = () => {

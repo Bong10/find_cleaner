@@ -2,8 +2,8 @@ import dynamic from "next/dynamic";
 import JobAlerts from "@/components/dashboard-pages/candidates-dashboard/job-alerts";
 
 export const metadata = {
-  title: "My Job Alerts || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Job Alerts || TidyLinker - New Cleaning Job Notifications",
+description: "View and manage your cleaning job alerts on TidyLinker. Get instant updates on the latest job openings near you."
 };
 
 const index = () => {

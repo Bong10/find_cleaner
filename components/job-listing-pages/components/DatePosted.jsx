@@ -2,42 +2,45 @@
 
 import { useDispatch, useSelector } from "react-redux";
 import { addDatePosted } from "@/store/slices/filterSlice";
-import { datePostCheck } from "@/store/slices/jobsSlice";
 
 const DatePosted = () => {
   const dispatch = useDispatch();
 
-  // options (with names/ids) come from jobsSlice
-  const datePost = useSelector((state) => state.jobs.browse.datePost) || [];
+  const datePostOptions = [
+    { id: "all", name: "All", value: "all" },
+    { id: "today", name: "Last Hour", value: "today" },
+    { id: "last-24-hours", name: "Last 24 Hours", value: "last-24-hours" },
+    { id: "last-7-days", name: "Last 7 Days", value: "last-7-days" },
+    { id: "last-14-days", name: "Last 14 Days", value: "last-14-days" },
+    { id: "last-30-days", name: "Last 30 Days", value: "last-30-days" },
+  ];
 
-  // the actual selected value comes from filterSlice
-  const selected = useSelector(
-    (state) => state.filter.jobList.datePosted
-  );
+  const selected = useSelector((s) => s.filter?.jobList?.datePosted) || "all";
 
-  const onChange = (e, id) => {
-    const value = e.target.value;
-    dispatch(addDatePosted(value)); // update filter slice
-    dispatch(datePostCheck(id));    // update isChecked flags in jobs slice
-  };
+  const onPick = (value) => dispatch(addDatePosted(value));
 
   return (
-    <ul className="ui-checkbox">
-      {datePost.map((item) => {
-        const inputId = `date-posted-${item.id}`;
+    <ul className="switchbox">
+      {datePostOptions.map((item) => {
+        const inputId = `datePosted-${item.id}`;
         return (
-          <li key={item.id}>
-            <label htmlFor={inputId}>
+          <li key={item.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Toggle control */}
+            <label className="switch" htmlFor={inputId} style={{ margin: 0 }}>
               <input
                 id={inputId}
-                type="radio"                 // radios behave mutually exclusive
-                name="date-posted"           // all in one group
+                type="radio"                 // keep radio (single select)
+                name="datePosted"
                 value={item.value}
                 checked={selected === item.value}
-                onChange={(e) => onChange(e, item.id)}
+                onChange={() => onPick(item.value)}
               />
-              <span></span>
-              <p>{item.name}</p>
+              <span className="slider round"></span>
+            </label>
+
+            {/* Clickable title bound to the same input */}
+            <label htmlFor={inputId} className="title" style={{ cursor: "pointer", margin: 0 }}>
+              {item.name}
             </label>
           </li>
         );
