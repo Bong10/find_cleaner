@@ -24,9 +24,11 @@ const CandidateSingleDynamicV1 = ({ params }) => {
   const [loading, setLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Check if user is employer or admin
-  const isEmployer = user?.user_type === "employer";
+  // Check if user is employer or admin - matching the header logic
+  const roleName = String(user?.role || "").toLowerCase();
+  const isEmployer = roleName === "employer";
   const isAdmin = user?.is_admin || user?.is_superuser;
+  const isCleaner = roleName === "cleaner" || roleName === "candidate";
   const canAccessFullInfo = isEmployer || isAdmin;
 
   useEffect(() => {
@@ -130,39 +132,45 @@ const CandidateSingleDynamicV1 = ({ params }) => {
     return tags;
   };
 
-  // Helper to mask sensitive information
-  const maskEmail = (email) => {
-    if (!email) return "Contact info hidden";
-    if (canAccessFullInfo) return email;
-    const [username, domain] = email.split('@');
-    return `${username.substring(0, 2)}****@${domain}`;
-  };
-
-  const maskPhone = (phone) => {
-    if (!phone) return "Contact info hidden";
-    if (canAccessFullInfo) return phone;
-    return phone.substring(0, 3) + "****" + phone.substring(phone.length - 2);
-  };
-
-  // Handle employer-only actions
-  const handleEmployerAction = (action) => {
+  // Handle booking action
+  const handleBookingClick = () => {
     if (!isAuthenticated) {
-      toast.warning("Please log in as an employer to " + action);
-      // You can trigger login modal here or redirect
-      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
-    } else if (!canAccessFullInfo) {
-      toast.warning("Only employers can " + action + ". Please register as an employer.");
-      router.push('/register-employer');
+      toast.warning("Please log in as an employer to book a cleaner");
+      router.push('/login?redirect=' + encodeURIComponent(`/book-cleaner/${id}`));
+    } else if (!isEmployer) {
+      toast.warning("Only employers can book cleaners. Please register as an employer.");
+      router.push('/register?type=employer');
     } else {
-      // Perform the action
-      if (action === "book cleaner") {
-        toast.success("Booking feature coming soon!");
-        // Navigate to booking page or open booking modal
-      } else if (action === "shortlist") {
-        toast.success("Added to shortlist!");
-        // Add to shortlist logic
-      }
+      // Store cleaner data and navigate to booking flow
+      localStorage.setItem('selectedCleaner', JSON.stringify(cleaner));
+      router.push(`/book-cleaner/${id}`);
     }
+  };
+
+  // Handle shortlist action
+  const handleShortlistClick = () => {
+    if (!isAuthenticated) {
+      toast.warning("Please log in as an employer to add to shortlist");
+      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+    } else if (!isEmployer) {
+      toast.warning("Only employers can shortlist cleaners. Please register as an employer.");
+      router.push('/register?type=employer');
+    } else {
+      toast.success("Added to shortlist!");
+      // Add your shortlist logic here
+    }
+  };
+
+  // Prepare cleaner data for booking modal
+  const getCleanerDataForBooking = () => {
+    return {
+      id: cleaner?.id || cleaner?.user?.id || id,
+      name: getCleanerName(),
+      hourly_rate: cleaner?.hourly_rate || 20,
+      rating: cleaner?.averageRating || cleaner?.average_rating || 0,
+      profile_picture: getProfileImage(),
+      services: getSkills(),
+    };
   };
 
   if (loading) {
@@ -253,19 +261,50 @@ const CandidateSingleDynamicV1 = ({ params }) => {
                 </div>
 
                 <div className="btn-box">
-                  <button 
-                    className="theme-btn btn-style-one"
-                    onClick={() => handleEmployerAction("book cleaner")}
-                  >
-                    Book Cleaner
-                  </button>
-                  <button 
-                    className="bookmark-btn"
-                    onClick={() => handleEmployerAction("shortlist")}
-                    title={canAccessFullInfo ? "Add to shortlist" : "Login as employer to shortlist"}
-                  >
-                    <i className="flaticon-bookmark"></i>
-                  </button>
+                  {/* Only show action buttons for employers */}
+                  {isEmployer ? (
+                    <>
+                      <button 
+                        className="theme-btn btn-style-one"
+                        onClick={handleBookingClick}
+                      >
+                        Book Cleaner
+                      </button>
+                      <button 
+                        className="bookmark-btn"
+                        onClick={handleShortlistClick}
+                        title="Add to shortlist"
+                      >
+                        <i className="flaticon-bookmark"></i>
+                      </button>
+                    </>
+                  ) : isAuthenticated && isCleaner ? (
+                    // Show message for cleaners viewing other cleaners
+                    <div className="alert alert-info" style={{ 
+                      marginBottom: 0,
+                      padding: '10px 20px',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}>
+                      <i className="la la-info-circle"></i> Switch to an employer account to book cleaners
+                    </div>
+                  ) : !isAuthenticated ? (
+                    // Show login prompt for non-authenticated users
+                    <>
+                      <button 
+                        className="theme-btn btn-style-one"
+                        onClick={() => router.push('/login?redirect=' + encodeURIComponent(window.location.pathname))}
+                      >
+                        Login to Book
+                      </button>
+                      <button 
+                        className="theme-btn btn-style-two ms-2"
+                        onClick={() => router.push('/register?type=employer')}
+                      >
+                        Register as Employer
+                      </button>
+                    </>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -457,7 +496,7 @@ const CandidateSingleDynamicV1 = ({ params }) => {
                               href="#" 
                               onClick={(e) => {
                                 e.preventDefault();
-                                handleEmployerAction("contact cleaner");
+                                router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
                               }}
                               style={{ color: '#007bff', textDecoration: 'underline' }}
                             >
@@ -466,7 +505,7 @@ const CandidateSingleDynamicV1 = ({ params }) => {
                           </p>
                           <button 
                             className="theme-btn btn-style-one w-100"
-                            onClick={() => router.push('/register-employer')}
+                            onClick={() => router.push('/register?type=employer')}
                           >
                             Register as Employer
                           </button>

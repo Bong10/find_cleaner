@@ -133,7 +133,7 @@ export default function PostBoxForm() {
             <label>Location</label>
             <input
               type="text"
-              placeholder="Yaoundé"
+              placeholder="Cambridge, CB2 1TN, United Kingdom"
               value={form.location}
               onChange={onBasicChange("location")}
               required

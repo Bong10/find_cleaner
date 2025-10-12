@@ -60,28 +60,29 @@ const DashboardHeader = () => {
       <div className="container-fluid">
         {/* <!-- Main box --> */}
         <div className="main-box">
-          {/* <!--Nav Outer --> */}
-          <div className="nav-outer">
-            <div className="logo-box">
-              <div className="logo">
-                <Link href="/">
-                  <Image
-                    alt="brand"
-                    src="/images/logo-white.svg"
-                    width={154}
-                    height={50}
-                    priority
-                  />
-                </Link>
-              </div>
+          {/* Logo - Left Side */}
+          <div className="logo-box">
+            <div className="logo">
+              <Link href="/">
+                <Image
+                  alt="brand"
+                  src="/images/logo.png"
+                  width={50}
+                  height={30}
+                  priority
+                />
+              </Link>
             </div>
-            {/* End .logo-box */}
-
-            <HeaderNavContent />
-            {/* <!-- Main Menu End--> */}
           </div>
-          {/* End .nav-outer */}
+          {/* End .logo-box */}
 
+          {/* Centered Navigation */}
+          <div className="nav-center">
+            <HeaderNavContent />
+          </div>
+          {/* <!-- Main Menu End--> */}
+
+          {/* Right Side Actions */}
           <div className="outer-box">
             <button className="menu-btn">
               <span className="count">1</span>
@@ -137,6 +138,51 @@ const DashboardHeader = () => {
           {/* End outer-box */}
         </div>
       </div>
+
+      <style jsx>{`
+        .main-header .main-box {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 20px;
+          width: 100%;
+        }
+
+        .logo-box {
+          flex: 0 0 auto;
+          min-width: 150px;
+        }
+
+        .nav-center {
+          flex: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 0 20px;
+        }
+
+        .outer-box {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          min-width: 150px;
+          justify-content: flex-end;
+        }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+          .main-header .main-box {
+            flex-wrap: wrap;
+          }
+          
+          .nav-center {
+            order: 3;
+            width: 100%;
+            margin-top: 15px;
+          }
+        }
+      `}</style>
     </header>
   );
 };

@@ -43,3 +43,5 @@ app (2).zip
 
 # 
 /Backend
+next.config.js
+/utils/axiosConfig.js

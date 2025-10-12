@@ -23,6 +23,7 @@ import shortlistReducer from "./slices/shortlistSlice";
 import cleanerProfileReducer from "./slices/cleanerProfileSlice";
 import applicationDetailReducer from "./slices/applicationDetailSlice";
 import filtersReducer from "./slices/filterSlice";  // <-- NEW registration
+import bookingReducer from "./slices/bookingSlice";
 import usersReducer from "./slices/usersSlice";
 
 export const store = configureStore({
@@ -53,6 +54,7 @@ export const store = configureStore({
         candidateFilter: candidateFilterSlice,
         shop: shopSlice,
         users: usersReducer, // Add this reducer
+        booking: bookingReducer,
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(),
 });

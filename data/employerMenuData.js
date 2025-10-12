@@ -41,13 +41,13 @@ module.exports = [
     routePath: "/employers-dashboard/shortlisted-resumes",
     active: "",
   },
-  {
-    id: 7,
-    name: "Packages",
-    icon: "la-box",
-    routePath: "/employers-dashboard/packages",
-    active: "",
-  },
+  // {
+  //   id: 7,
+  //   name: "Packages",
+  //   icon: "la-box",
+  //   routePath: "/employers-dashboard/packages",
+  //   active: "",
+  // },
   {
     id: 8,
     name: "Messages",
@@ -57,7 +57,7 @@ module.exports = [
   },
   {
     id: 9,
-    name: "Resume Alerts",
+    name: "Notifications",
     icon: "la-bell",
     routePath: "/employers-dashboard/resume-alerts",
     active: "",
