@@ -188,7 +188,7 @@ const BookCleanerPage = ({ params }) => {
         });
         
         // First, create the booking/application
-        const bookingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/job-bookings/book/`, {
+        const bookingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://cgsabiozard.co.uk'}/api/job-bookings/book/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -207,7 +207,7 @@ const BookCleanerPage = ({ params }) => {
         
         if (bookingResponse.ok) {
           // Update job status to taken
-          const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/jobs/${jobId}/`, {
+          const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://cgsabiozard.co.uk'}/api/jobs/${jobId}/`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
@@ -252,7 +252,7 @@ const BookCleanerPage = ({ params }) => {
         
         console.log("Creating job with data:", jobData);
         
-        const jobResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/jobs/`, {
+        const jobResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://cgsabiozard.co.uk'}/api/jobs/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -273,7 +273,7 @@ const BookCleanerPage = ({ params }) => {
             cleaner: parseInt(cleanerId)
           });
           
-          const bookingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/job-applications/`, {
+          const bookingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://cgsabiozard.co.uk'}/api/job-applications/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
