@@ -26,6 +26,7 @@ import filtersReducer from "./slices/filterSlice";  // <-- NEW registration
 import bookingReducer from "./slices/bookingSlice";
 import usersReducer from "./slices/usersSlice";
 
+
 export const store = configureStore({
     reducer: {
         auth: authReducer,
@@ -54,7 +55,7 @@ export const store = configureStore({
         candidateFilter: candidateFilterSlice,
         shop: shopSlice,
         users: usersReducer, // Add this reducer
-        booking: bookingReducer,
+        bookings: bookingReducer,
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(),
 });

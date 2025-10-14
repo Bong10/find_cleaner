@@ -29,13 +29,20 @@ module.exports = [
   },
   {
     id: 5,
+    name: "My Bookings", // NEW
+    icon: "la-calendar-check",
+    routePath: "/employers-dashboard/bookings",
+    active: "",
+  },
+  {
+    id: 6,
     name: "All Applicants",
     icon: "la-file-invoice",
     routePath: "/employers-dashboard/all-applicants",
     active: "",
   },
   {
-    id: 6,
+    id: 7,
     name: "Shortlisted Resumes",
     icon: "la-bookmark-o",
     routePath: "/employers-dashboard/shortlisted-resumes",

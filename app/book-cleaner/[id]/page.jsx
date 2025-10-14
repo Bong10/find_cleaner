@@ -188,7 +188,7 @@ const BookCleanerPage = ({ params }) => {
         });
         
         // First, create the booking/application
-        const bookingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/job-applications/`, {
+        const bookingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/job-bookings/book/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
