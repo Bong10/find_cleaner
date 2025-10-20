@@ -240,7 +240,7 @@ const JobSingleDynamicV1 = ({ params }) => {
                    job?.company_logo;
       
       if (logo && !logo.startsWith('http')) {
-        return `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}${logo}`;
+        return `${process.env.NEXT_PUBLIC_API_URL || 'https://cgsabiozard.co.uk'}${logo}`;
       }
       return logo || FALLBACK_LOGO;
     }
