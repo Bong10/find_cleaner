@@ -11,6 +11,11 @@ import { useRouter, usePathname } from "next/navigation";
 import employerMenuData from "../../data/employerMenuData";
 import candidatesMenuData from "../../data/candidatesMenuData";
 import { isActiveLink } from "../../utils/linkActiveChecker";
+import ConfirmModal from "@/components/common/ConfirmModal";
+import {
+  fetchNotificationsUnreadCount,
+  selectNotificationsUnreadCount,
+} from "@/store/slices/notificationsSlice";
 
 const DefaulHeader2 = () => {
   const [navbar, setNavbar] = useState(false);
@@ -20,6 +25,7 @@ const DefaulHeader2 = () => {
   const pathname = usePathname();
 
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const unreadNotifs = useSelector(selectNotificationsUnreadCount) || 0;
 
   const changeBackground = () => {
     setNavbar(window.scrollY >= 10);
@@ -31,14 +37,31 @@ const DefaulHeader2 = () => {
     return () => window.removeEventListener("scroll", changeBackground);
   }, []);
 
-  const handleLogout = async () => {
-    await dispatch(performLogout());
-    window.location.replace("/");
+  // poll unread notification count like home Header
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let timer;
+    dispatch(fetchNotificationsUnreadCount());
+    timer = setInterval(() => dispatch(fetchNotificationsUnreadCount()), 15000);
+    return () => { if (timer) clearInterval(timer); };
+  }, [dispatch, isAuthenticated]);
+
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogoutClick = (e) => {
+    e.preventDefault();
+    setShowLogoutConfirm(true);
   };
 
-  const handleLogoutClick = async (e) => {
-    e.preventDefault();
-    await handleLogout();
+  const handleConfirmLogout = async () => {
+    setIsLoggingOut(true);
+    setShowLogoutConfirm(false);
+    try {
+      await dispatch(performLogout());
+    } finally {
+      if (typeof window !== "undefined") window.location.replace("/login");
+    }
   };
 
   const getDashboardRoute = () => {
@@ -88,6 +111,18 @@ const DefaulHeader2 = () => {
             </Link>
           </div>
         </div>
+        {/* Logout Confirmation Modal */}
+        <ConfirmModal
+          isOpen={showLogoutConfirm}
+          onClose={() => !isLoggingOut && setShowLogoutConfirm(false)}
+          onConfirm={handleConfirmLogout}
+          title="Confirm Logout"
+          message="Are you sure you want to logout? You'll need to sign in again to access your dashboard."
+          confirmText={isLoggingOut ? "Logging out..." : "Yes, Logout"}
+          cancelText="Cancel"
+          confirmStyle="primary"
+          icon="la-sign-out-alt"
+        />
 
         {/* Centered navigation */}
         <div className="nav-outer">
@@ -104,13 +139,21 @@ const DefaulHeader2 = () => {
                 <span className="icon la la-heart-o"></span>
               </button>
 
-              <button className="menu-btn auth-actions">
-                <span className="icon la la-bell"></span>
-              </button>
+              {(() => {
+                const notifHref = isCandidate
+                  ? "/candidates-dashboard/job-alerts"
+                  : "/employers-dashboard/resume-alerts";
+                return (
+                  <Link href={notifHref} className="menu-btn auth-actions" aria-label="Notifications">
+                    {unreadNotifs > 0 && <span className="count">{unreadNotifs}</span>}
+                    <span className="icon la la-bell"></span>
+                  </Link>
+                );
+              })()}
 
               <div className="dropdown dashboard-option auth-actions">
                 <a
-                  className="dropdown-toggle logo"
+                  className="dropdown-toggle log"
                   role="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"

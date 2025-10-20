@@ -5,52 +5,38 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import NotificationDetails from "./NotificationDetails";
 import ConfirmModal, { useConfirm } from "../../../../common/ConfirmModal";
-// Future: import { getAllNotifications, markAsRead, deleteNotification } from '@/services/cleanerService';
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchNotifications as fetchNotificationsAction,
+  fetchNotificationsUnreadCount,
+  selectNotifications,
+  selectNotificationsLoading,
+  markNotificationRead,
+  markAllNotificationsRead,
+} from "@/store/slices/notificationsSlice";
 
 const JobAlertsTable = () => {
-  const [notifications, setNotifications] = useState([]);
+  const dispatch = useDispatch();
+  const notifications = useSelector(selectNotifications) || [];
+  const loading = useSelector(selectNotificationsLoading);
   const [filter, setFilter] = useState("all"); // all, unread, job, message, alert
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
   const notificationId = searchParams.get("notification");
   const { confirmState, confirm, closeConfirm } = useConfirm();
 
   useEffect(() => {
-    fetchNotifications();
+    const params = {};
+    if (filter === "unread") params.is_read = false;
+    dispatch(fetchNotificationsAction(params));
   }, [filter]);
-
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      
-      // TODO: Uncomment when backend endpoint is ready
-      // const response = await getAllNotifications({ filter });
-      // setNotifications(response?.data || []);
-      
-      // For now, return empty array until backend is connected
-      setNotifications([]);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      setNotifications([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleMarkAsRead = async (id) => {
     try {
-      // TODO: Call backend API to mark as read
-      // await markAsRead(id);
-      
-      setNotifications(prev => 
-        prev.map(n => n.id == id ? { ...n, is_read: true } : n)
-      );
+      await dispatch(markNotificationRead(id));
+      dispatch(fetchNotificationsUnreadCount());
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error marking notification as read:', error);
     }
   };
@@ -66,37 +52,46 @@ const JobAlertsTable = () => {
     });
 
     if (shouldDelete) {
-      try {
-        // TODO: Call backend API to delete
-        // await deleteNotification(notificationId);
-        
-        setNotifications(prev => prev.filter(n => n.id != notificationId));
-      } catch (error) {
-        console.error('Error deleting notification:', error);
-      }
+      // TODO: Implement delete endpoint and add thunk, then refetch list
+      // For now, refetch list to reflect backend state if deletion is supported server-side
+      dispatch(fetchNotificationsAction({}));
     }
   };
 
   const handleDeleteFromDetails = (notificationId) => {
-    // Just remove from state, no confirmation needed as it's handled in details page
-    setNotifications(prev => prev.filter(n => n.id != notificationId));
+    // After deletion in details, refetch list to stay in sync
+    dispatch(fetchNotificationsAction({}));
   };
 
-  const handleView = (id) => {
-    router.push(`/candidates-dashboard/job-alerts?notification=${id}`);
+  const handleView = (n) => {
+    handleMarkAsRead(n.id);
+    const t = n?.target || {};
+    // Prefer normalized type for routing decisions (some backends don't set target.type)
+    if ((n?.type === 'Booking' || n?.category === 'booking')) {
+      const qs = t?.id ? `?booking=${t.id}` : '';
+      router.push(`/candidates-dashboard/bookings${qs}`);
+    } else if (t.type === 'job' && t.id) {
+      router.push(`/job-single-v1/${t.id}`);
+    } else if (t.type === 'chat' && t.id) {
+      router.push(`/candidates-dashboard/messages?chat=${t.id}`);
+    } else {
+      // fallback
+    }
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'numeric', 
-      day: 'numeric', 
-      year: 'numeric' 
-    });
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    const now = new Date();
+    const isSameDay = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+    if (isSameDay) {
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
   };
 
   const getCategoryStyle = (category) => {
-    switch(category?.toLowerCase()) {
+    switch(String(category || '').toLowerCase()) {
       case 'job':
         return { background: '#e8f5e9', color: '#2e7d32' };
       case 'message':
@@ -139,6 +134,15 @@ const JobAlertsTable = () => {
               <option value="message">Messages</option>
               <option value="alert">Alerts</option>
             </select>
+            <button
+              className="theme-btn btn-style-three ms-2"
+              onClick={async () => {
+                await dispatch(markAllNotificationsRead());
+                dispatch(fetchNotificationsUnreadCount());
+              }}
+            >
+              Mark all as read
+            </button>
           </div>
         </div>
         {/* End filter top bar */}
@@ -212,7 +216,7 @@ const JobAlertsTable = () => {
                     </td>
                   </tr>
                 ) : (
-                  notifications.map((item) => (
+                  [...notifications].sort((a,b) => new Date(b?.created_at||0) - new Date(a?.created_at||0)).map((item) => (
                     <tr key={item.id} style={{ 
                       background: !item.is_read ? '#f8f9fa' : 'transparent' 
                     }}>
@@ -243,7 +247,7 @@ const JobAlertsTable = () => {
                                 href="#"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  handleView(item.id);
+                                  handleView(item);
                                 }}
                                 style={{ color: '#202124', cursor: 'pointer' }}
                               >
@@ -255,7 +259,7 @@ const JobAlertsTable = () => {
                               color: '#696969',
                               fontSize: '14px'
                             }}>
-                              {item.message}
+                                {item.message}
                             </p>
                           </div>
                         </div>
@@ -267,9 +271,9 @@ const JobAlertsTable = () => {
                           fontSize: '13px',
                           fontWeight: '500',
                           display: 'inline-block',
-                          ...getCategoryStyle(item.category)
+                            ...getCategoryStyle(item.category)
                         }}>
-                          {item.category}
+                            {item.type || (item.category ? (item.category.charAt(0).toUpperCase() + item.category.slice(1)) : '')}
                         </span>
                       </td>
                       <td style={{ textAlign: 'center', color: '#696969' }}>
@@ -296,7 +300,7 @@ const JobAlertsTable = () => {
                               <button
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  handleView(item.id);
+                                  handleView(item);
                                 }}
                                 data-text="View"
                                 className="action-link"

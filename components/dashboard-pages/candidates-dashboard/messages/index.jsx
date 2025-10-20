@@ -6,13 +6,11 @@ import LoginPopup from "../../../common/form/login/LoginPopup";
 import DashboardCandidatesSidebar from "../../../header/DashboardCandidatesSidebar";
 import BreadCrumb from "../../BreadCrumb";
 import CopyrightFooter from "../../CopyrightFooter";
-import ContactList from "./components/ContactList";
-import ContentField from "./components/ContentField";
-import SearchBox from "./components/SearchBox";
+import ChatBox from "./components"; // Correctly import the main ChatBox component
 import DashboardCandidatesHeader from "../../../header/DashboardCandidatesHeader";
 import MenuToggler from "../../MenuToggler";
 
-const index = () => {
+const Index = () => {
   return (
     <div className="page-wrapper dashboard">
       <span className="header-span"></span>
@@ -41,35 +39,13 @@ const index = () => {
 
           <div className="row">
             <div className="col-lg-12">
+              {/* The ls-widget provides the white background and padding */}
               <div className="ls-widget">
-                <div className="tabs-box">
-                  <div className="widget-title">
-                    <h4>My Messages</h4>
-                  </div>
-                  {/* End widget-title */}
-
-                  <div className="widget-content">
-                    <div className="row">
-                      <div className="col-lg-4">
-                        <div className="message-sidebar">
-                          <SearchBox />
-                          <ContactList />
-                        </div>
-                      </div>
-                      {/* End .col */}
-
-                      <div className="col-lg-8">
-                        <ContentField />
-                      </div>
-                      {/* End .col */}
-                    </div>
-                    {/* End .row */}
-                  </div>
-                  {/* End widget-content */}
+                <div className="widget-content">
+                  {/* Use the ChatBox component which contains all the logic */}
+                  <ChatBox />
                 </div>
-                {/* End .tabs-box */}
               </div>
-              {/* End .ls-widget */}
             </div>
           </div>
           {/* End .row */}
@@ -85,4 +61,4 @@ const index = () => {
   );
 };
 
-export default index;
+export default Index;

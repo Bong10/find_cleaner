@@ -1,121 +1,86 @@
 import Link from "next/link";
-import { useEffect, useState } from 'react';
-// Future: import { getNotifications } from '@/services/cleanerService';
+import { useMemo } from 'react';
 
-const Notification = () => {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function Notification({ items = [], loading = false }) {
+  const dataSet = Array.isArray(items) ? items : [];
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
+  if (loading) {
+    return (
+      <ul className="notification-list">
+        {[1, 2, 3].map((i) => (
+          <li key={i} className="ntf-row">
+            <span className="ntf-icon ntf-skeleton" />
+            <div className="ntf-body">
+              <div className="ntf-line ntf-skeleton" />
+              <div className="ntf-line ntf-skeleton short" />
+            </div>
+          </li>
+        ))}
+        <style jsx>{`
+          .ntf-row { display:flex; align-items:center; gap:12px; padding:10px 0; }
+          .ntf-icon { width:32px; height:32px; border-radius:999px; }
+          .ntf-skeleton { background: linear-gradient(90deg, #eef2f7, #f5f7fb, #eef2f7); }
+          .ntf-body { flex:1; }
+          .ntf-line { height:10px; border-radius:6px; margin:4px 0; }
+          .ntf-line.short { width:40%; }
+        `}</style>
+      </ul>
+    );
+  }
 
-  const fetchNotifications = async () => {
-    try {
-      // TODO: Uncomment when backend endpoint is ready
-      // const response = await getNotifications();
-      // const data = response?.data || [];
-      // setNotifications(data);
-      
-      // For now, use default notifications for cleaners
-      // To test empty state, set this to []
-      const defaultNotifications = [
-        // {
-        //   id: 1,
-        //   icon: "flaticon-briefcase",
-        //   text: "New cleaning job in ",
-        //   highlight: "Downtown Office",
-        //   time: "1 hour ago",
-        // },
-        // {
-        //   id: 2,
-        //   icon: "flaticon-bookmark",
-        //   text: "Employer saved your ",
-        //   highlight: "Cleaner Profile",
-        //   time: "2 hours ago",
-        // },
-        // {
-        //   id: 3,
-        //   icon: "flaticon-envelope",
-        //   text: "Message about ",
-        //   highlight: "House Cleaning Job",
-        //   time: "3 hours ago",
-        // },
-        // {
-        //   id: 4,
-        //   icon: "flaticon-eye",
-        //   text: "Your application viewed for ",
-        //   highlight: "Office Cleaning",
-        //   time: "5 hours ago",
-        // },
-        // {
-        //   id: 5,
-        //   icon: "flaticon-bell",
-        //   text: "Job match: ",
-        //   highlight: "Hotel Housekeeping",
-        //   time: "1 day ago",
-        // },
-      ];
-
-      setNotifications(defaultNotifications);
-      
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      // On error, set empty array to show "no notifications" message
-      setNotifications([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!dataSet || dataSet.length === 0) {
+    return (
+      <ul className="notification-list">
+        <li className="ntf-empty">No notifications yet</li>
+        <style jsx>{`
+          .ntf-empty { text-align:center; padding:14px; color:#98a2b3; font-size:13px; }
+        `}</style>
+      </ul>
+    );
+  }
 
   return (
-    <>
-      <div className="widget-title">
-        <h4>Notifications</h4>
-      </div>
-      <div className="widget-content">
-        <ul className="notification-list">
-          {notifications.length === 0 ? (
-            <li style={{ 
-              textAlign: 'center', 
-              padding: '20px',
-              color: '#999' 
-            }}>
-              <span 
-                style={{ 
-                  fontSize: '24px',
-                  marginRight: '10px',
-                  opacity: '0.5'
-                }}
-              ></span>
-              No notifications available
-            </li>
-          ) : (
-            notifications.map((item) => (
-              <li key={item.id}>
-                <span 
-                  className={`icon ${item.icon}`}
-                  style={{ 
-                    fontSize: '18px',
-                    marginRight: '10px',
-                  }}
-                ></span>
-                {item.text}
-                <strong>{item.highlight}</strong>
-                {' '}
-                <Link href="#" className="colored" style={{ marginLeft: '5px' }}>
-                  {item.time}
-                </Link>
-              </li>
-            ))
-          )}
-        </ul>
-      </div>
-    </>
-  );
-};
+    <ul className="notification-list">
+      {dataSet.map((n) => {
+        const { id, icon: iconName, iconColor, iconBg, actor, action, subject, time, href } = n || {};
+        const icon = iconName || 'la-bell';
+        return (
+          <li key={id} className={`ntf-row`}>
+            <span className={`ntf-icon`} aria-hidden style={{ background: iconBg || '#f0f5ff', color: iconColor || '#1967d2' }}>
+              <i className={`la ${icon}`} />
+            </span>
+            <div className="ntf-body">
+              <div className="ntf-line-1">
+                {actor && <strong className="ntf-actor">{actor}</strong>} {action}{' '}
+                {subject && <span className="ntf-subject">{subject}</span>}
+              </div>
+              <div className="ntf-line-2">
+                {time && <span className="ntf-time">{time}</span>}
+                {href && (
+                  <Link href={href} className="ntf-link">View</Link>
+                )}
+              </div>
+            </div>
+          </li>
+        );
+      })}
 
-export default Notification;
+      <style jsx>{`
+        .ntf-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px dashed #eef2f7; }
+        .ntf-row:last-child { border-bottom:none; }
+        .ntf-icon { width:45px; height:45px; border-radius:10px; background:#f0f5ff; color:#1967d2; display:inline-flex; align-items:center; justify-content:center; }
+  .ntf-icon .la { font-size:20px; line-height:1; }
+        .ntf-body { flex:1; min-width:0; }
+        .ntf-line-1 { color:#0f172a; font-size:14px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .ntf-actor { font-weight:700; margin-right:4px; }
+        .ntf-subject { color:#1967d2; font-weight:600; }
+        .ntf-line-2 { margin-top:4px; display:flex; align-items:center; gap:10px; font-size:12px; }
+        .ntf-time { color:#94a3b8; }
+        .ntf-link { color:#1967d2; font-weight:600; }
+      `}</style>
+    </ul>
+  );
+}
 
 /* 
   Backend Integration Notes:

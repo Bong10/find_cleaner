@@ -25,6 +25,10 @@ import applicationDetailReducer from "./slices/applicationDetailSlice";
 import filtersReducer from "./slices/filterSlice";  // <-- NEW registration
 import bookingReducer from "./slices/bookingSlice";
 import usersReducer from "./slices/usersSlice";
+import messagesReducer from "./slices/messagesSlice";
+import chatsReducer from "./slices/chatsSlice";
+import notificationsReducer from "./slices/notificationsSlice";
+
 
 
 export const store = configureStore({
@@ -53,6 +57,9 @@ export const store = configureStore({
         employerFilter: employerFilterSlice,
         candidate: candidateSlice,
         candidateFilter: candidateFilterSlice,
+        messages: messagesReducer,
+        chats: chatsReducer,
+    notifications: notificationsReducer,
         shop: shopSlice,
         users: usersReducer, // Add this reducer
         bookings: bookingReducer,

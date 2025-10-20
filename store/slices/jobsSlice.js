@@ -8,6 +8,7 @@ import {
 } from "@/services/jobsService";
 import { incrementAppliedJobs } from "./metricsSlice";
 import { toast } from "react-toastify";
+import api from "@/utils/axiosConfig";
 
 // Submit job form
 export const submitJob = createAsyncThunk(
@@ -90,28 +91,15 @@ export const applyForJob = createAsyncThunk(
   "jobs/apply",
   async ({ job, cover_letter }, { rejectWithValue, dispatch }) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/job-applications/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        },
-        body: JSON.stringify({ job, cover_letter })
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw error;
-      }
-      
-      const result = await response.json();
+      const { data: result } = await api.post(`/api/job-applications/`, { job, cover_letter });
       
       // Increment the applied jobs count in metrics
       dispatch(incrementAppliedJobs());
       
       return result;
     } catch (error) {
-      return rejectWithValue(error);
+      const data = error?.response?.data || error;
+      return rejectWithValue(data);
     }
   }
 );
@@ -268,5 +256,21 @@ export const selectJobForm = (state) => state.jobs.form;
 export const selectJobSubmitting = (state) => state.jobs.submitting;
 export const selectJobError = (state) => state.jobs.error;
 export const selectJobCreated = (state) => state.jobs.created;
+
+// Additional selectors for components expecting job lookup by id
+// Returns the job data when the currently loaded job matches the provided id.
+// Falls back to undefined if no job is loaded or id doesn't match.
+export const selectJobById = (state, id) => {
+  const current = state?.jobs?.currentJob;
+  if (!current) return undefined;
+  // current may be an axios response or plain data; normalize
+  const data = current?.data ?? current;
+  if (id == null) return data;
+  const currentId = data?.id ?? data?.pk ?? data?.job?.id;
+  return String(currentId) === String(id) ? data : undefined;
+};
+
+// Expose loading flag (optionally accepts id for compatibility)
+export const selectJobLoading = (state/*, id*/ ) => state?.jobs?.loading || false;
 
 export default jobsSlice.reducer;

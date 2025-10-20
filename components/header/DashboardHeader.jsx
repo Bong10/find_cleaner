@@ -10,6 +10,11 @@ import { isActiveLink } from "../../utils/linkActiveChecker";
 import { usePathname } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { performLogout } from "@/store/slices/authSlice";
+import ConfirmModal from "@/components/common/ConfirmModal";
+import {
+  fetchNotificationsUnreadCount,
+  selectNotificationsUnreadCount,
+} from "@/store/slices/notificationsSlice";
 
 // resolve relative media paths against your API base (if backend returns "/media/..")
 const API_BASE =
@@ -29,6 +34,7 @@ const DashboardHeader = () => {
   const pathname = usePathname();
 
   const { isAuthenticated, user } = useSelector((s) => s.auth);
+  const unreadNotifs = useSelector(selectNotificationsUnreadCount) || 0;
 
   useEffect(() => {
     const changeBackground = () => setNavbar(window.scrollY >= 0);
@@ -37,6 +43,16 @@ const DashboardHeader = () => {
     return () => window.removeEventListener("scroll", changeBackground);
   }, []);
 
+  // keep unread notification count fresh in header
+  useEffect(() => {
+    let timer;
+    dispatch(fetchNotificationsUnreadCount());
+    timer = setInterval(() => dispatch(fetchNotificationsUnreadCount()), 15000);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [dispatch]);
+
   // avatar from backend (fallback to your current placeholder)
   let avatarSrc = "/images/resource/company-6.png";
   if (user?.profile_picture) {
@@ -44,18 +60,27 @@ const DashboardHeader = () => {
     if (abs) avatarSrc = abs;
   }
 
-  const handleLogoutClick = async (e) => {
-    // Intercept ONLY the Logout item click
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogoutClick = (e) => {
     e.preventDefault();
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    setIsLoggingOut(true);
+    setShowLogoutConfirm(false);
     try {
       await dispatch(performLogout());
     } finally {
-      if (typeof window !== "undefined") window.location.replace("/");
+      if (typeof window !== "undefined") window.location.replace("/login");
     }
   };
 
   return (
-    // <!-- Main Header-->
+    <>
+    {/* Main Header */}
     <header className={`main-header header-shaddow  ${navbar ? "fixed-header " : ""}`}>
       <div className="container-fluid">
         {/* <!-- Main box --> */}
@@ -90,9 +115,10 @@ const DashboardHeader = () => {
             </button>
             {/* wishlisted menu */}
 
-            <button className="menu-btn">
+            <Link href="/employers-dashboard/resume-alerts" className="menu-btn" aria-label="Notifications">
+              {unreadNotifs > 0 && <span className="count badge-circle">{unreadNotifs}</span>}
               <span className="icon la la-bell"></span>
-            </button>
+            </Link>
             {/* End notification-icon */}
 
             {/* <!-- Dashboard Option --> */}
@@ -170,6 +196,26 @@ const DashboardHeader = () => {
           justify-content: flex-end;
         }
 
+        /* Centered numeric badge inside bell */
+        .menu-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+        .badge-circle {
+          position: absolute;
+          top: -6px;
+          right: -6px;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 4px;
+          border-radius: 999px;
+          background: #ff3b30;
+          color: #fff;
+          font-size: 11px;
+          font-weight: 700;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+        }
+
         /* Responsive */
         @media (max-width: 991px) {
           .main-header .main-box {
@@ -184,6 +230,19 @@ const DashboardHeader = () => {
         }
       `}</style>
     </header>
+      {/* Logout Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        onClose={() => !isLoggingOut && setShowLogoutConfirm(false)}
+        onConfirm={handleConfirmLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to logout? You'll need to sign in again to access your dashboard."
+        confirmText={isLoggingOut ? "Logging out..." : "Yes, Logout"}
+        cancelText="Cancel"
+        confirmStyle="primary"
+        icon="la-sign-out-alt"
+      />
+    </>
   );
 };
 

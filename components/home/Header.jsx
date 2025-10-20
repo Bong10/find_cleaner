@@ -1,4 +1,4 @@
-// components/header/Header.jsx
+// components/home/Header.jsx
 "use client";
 
 import Link from "next/link";
@@ -10,7 +10,11 @@ import { performLogout } from "@/store/slices/authSlice";
 import { useRouter, usePathname } from "next/navigation";
 import employerMenuData from "../../data/employerMenuData";
 import candidatesMenuData from "../../data/candidatesMenuData";
-import { isActiveLink } from "../../utils/linkActiveChecker";
+import ConfirmModal from "@/components/common/ConfirmModal";
+import {
+  fetchNotificationsUnreadCount,
+  selectNotificationsUnreadCount,
+} from "@/store/slices/notificationsSlice";
 
 const Header = () => {
   const [navbar, setNavbar] = useState(false);
@@ -20,6 +24,7 @@ const Header = () => {
   const pathname = usePathname();
 
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const unreadNotifs = useSelector(selectNotificationsUnreadCount) || 0;
 
   const changeBackground = () => {
     setNavbar(window.scrollY >= 10);
@@ -31,14 +36,31 @@ const Header = () => {
     return () => window.removeEventListener("scroll", changeBackground);
   }, []);
 
-  const handleLogout = async () => {
-    await dispatch(performLogout());
-    window.location.replace("/");
+  // poll unread notification count like dashboard headers
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let timer;
+    dispatch(fetchNotificationsUnreadCount());
+    timer = setInterval(() => dispatch(fetchNotificationsUnreadCount()), 15000);
+    return () => { if (timer) clearInterval(timer); };
+  }, [dispatch, isAuthenticated]);
+
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogoutClick = (e) => {
+    e.preventDefault();
+    setShowLogoutConfirm(true);
   };
 
-  const handleLogoutClick = async (e) => {
-    e.preventDefault();
-    await handleLogout();
+  const handleConfirmLogout = async () => {
+    setIsLoggingOut(true);
+    setShowLogoutConfirm(false);
+    try {
+      await dispatch(performLogout());
+    } finally {
+      window.location.replace("/login");
+    }
   };
 
   const getDashboardRoute = () => {
@@ -55,9 +77,20 @@ const Header = () => {
   const isCandidate = roleName === "candidate" || roleName === "cleaner";
   const menuData = isCandidate ? candidatesMenuData : employerMenuData;
 
+  // resolve media path against API base if needed
+  const API_BASE =
+    (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_BASE_URL
+      ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, "")
+      : "") || "";
+  const resolveMediaUrl = (path) => {
+    if (!path) return "";
+    if (/^https?:\/\//i.test(path)) return path;
+    return `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
+  };
   let avatarSrc = "/images/resource/avatar-1.jpg";
   if (user?.profile_picture) {
-    avatarSrc = user.profile_picture;
+    const abs = resolveMediaUrl(user.profile_picture);
+    if (abs) avatarSrc = abs;
   }
 
   if (!isClient) return null;
@@ -104,13 +137,21 @@ const Header = () => {
                 <span className="icon la la-heart-o"></span>
               </button>
 
-              <button className="menu-btn auth-actions">
-                <span className="icon la la-bell"></span>
-              </button>
+              {(() => {
+                const notifHref = isCandidate
+                  ? "/candidates-dashboard/job-alerts"
+                  : "/employers-dashboard/resume-alerts";
+                return (
+                  <Link href={notifHref} className="menu-btn auth-actions" aria-label="Notifications">
+                    {unreadNotifs > 0 && <span className="count">{unreadNotifs}</span>}
+                    <span className="icon la la-bell"></span>
+                  </Link>
+                );
+              })()}
 
               <div className="dropdown dashboard-option auth-actions">
                 <a
-                  className="dropdown-toggle logo"
+                  className="dropdown-toggle log"
                   role="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
@@ -127,7 +168,7 @@ const Header = () => {
 
                 <ul className="dropdown-menu">
                   {menuData.map((item) => {
-                    const active = isActiveLink(item.routePath, pathname);
+                    const active = false; // Do not highlight active in home header dropdown
                     const isLogout = item.name === "Logout" || item.id === 11;
 
                     return (
@@ -383,6 +424,18 @@ const Header = () => {
           margin: 4px 0;
         }
       `}</style>
+      {/* Logout Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        onClose={() => !isLoggingOut && setShowLogoutConfirm(false)}
+        onConfirm={handleConfirmLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to logout? You'll need to sign in again to access your dashboard."
+        confirmText={isLoggingOut ? "Logging out..." : "Yes, Logout"}
+        cancelText="Cancel"
+        confirmStyle="primary"
+        icon="la-sign-out-alt"
+      />
     </header>
   );
 };

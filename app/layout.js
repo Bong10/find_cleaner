@@ -14,15 +14,35 @@ import Preloader from "../components/common/Preloader.jsx";
 
 // Auth gate component
 import { useDispatch, useSelector } from "react-redux";
-import { bootstrapAuth } from "@/store/slices/authSlice";
+import { bootstrapAuth, performLogout } from "@/store/slices/authSlice";
+import { useRouter } from "next/navigation";
 
 function AuthGate({ children }) {
   const dispatch = useDispatch();
   const bootstrapping = useSelector((s) => s.auth.bootstrapping);
+  const isAuthenticated = useSelector((s) => s.auth.isAuthenticated);
+  const router = useRouter();
 
   useEffect(() => {
     dispatch(bootstrapAuth());
   }, [dispatch]);
+
+  // Listen for forced logout signals from axios interceptor (refresh failure)
+  useEffect(() => {
+    const onForceLogout = () => {
+      dispatch(performLogout());
+      router.push("/login");
+    };
+    window.addEventListener("auth:force-logout", onForceLogout);
+    const storageListener = (e) => {
+      if (e.key === "auth_force_logout") onForceLogout();
+    };
+    window.addEventListener("storage", storageListener);
+    return () => {
+      window.removeEventListener("auth:force-logout", onForceLogout);
+      window.removeEventListener("storage", storageListener);
+    };
+  }, [dispatch, router]);
 
   if (bootstrapping) {
     return <Preloader />;

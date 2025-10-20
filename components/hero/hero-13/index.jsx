@@ -142,18 +142,33 @@ export default function HeroSearch() {
 
   const handleSearch = () => {
     const params = new URLSearchParams();
-    if (serviceQuery) params.append('service', serviceQuery);
-    if (locationQuery) params.append('location', locationQuery);
-    if (selectedDate) params.append('date', selectedDate); // local key
+    const svc = (serviceQuery || '').trim();
+    const loc = (locationQuery || '').trim();
+
+    // Ignore placeholders
+    if (svc && svc !== 'I need help with...') params.append('service', svc);
+    if (loc && loc !== 'Postcode or area' && loc !== 'Getting your location...' && loc !== 'Could not get location') {
+      params.append('location', loc);
+    }
+    if (selectedDate) params.append('date', selectedDate); // local key YYYY-MM-DD
     if (selectedTime) params.append('time', selectedTime);
-    router.push(`/cleaners?${params.toString()}`);
+
+    const qs = params.toString();
+    router.push(qs ? `/cleaners?${qs}` : '/cleaners');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch();
+    }
   };
 
   return (
     <section className={`hero-section ${isOpen ? 'is-open' : ''}`}>
       {/* Background video */}
       <div className="hero-background">
-        <video src="images/videos/hero-room.mp4" autoPlay loop muted playsInline className="hero-video" />
+        <video src="/images/videos/hero-room.mp4" autoPlay loop muted playsInline className="hero-video" />
       </div>
 
       {/* Foreground */}
@@ -200,6 +215,7 @@ export default function HeroSearch() {
                     type="text"
                     value={serviceQuery}
                     onChange={(e) => setServiceQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder="e.g., End-of-tenancy clean"
                     autoFocus
                   />
@@ -217,6 +233,7 @@ export default function HeroSearch() {
                     type="text"
                     value={locationQuery}
                     onChange={(e) => setLocationQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder="Enter postcode or city"
                     autoFocus
                   />

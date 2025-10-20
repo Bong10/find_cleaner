@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import DashboadHome from "@/components/dashboard-pages/employers-dashboard/dashboard";
+import DashboardGuard from "@/components/auth/DashboardGuard";
 
 export const metadata = {
   title: "Employer Dashboard || TidyLinker - Cleaning Job Management Portal",
@@ -8,9 +9,9 @@ description: "Manage your cleaning job listings, track applications, and communi
 
 const index = () => {
   return (
-    <>
+    <DashboardGuard>
       <DashboadHome />
-    </>
+    </DashboardGuard>
   );
 };
 

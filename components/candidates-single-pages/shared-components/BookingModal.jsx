@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Modal } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { fetchEmployerJobs, assignCleanerToJob } from "@/store/slices/employerJobsSlice";
+import api from "@/utils/axiosConfig";
 import { createJobAndAssign } from "@/store/slices/jobsSlice";
 
 const BookingModal = ({ show, onClose, cleaner }) => {
@@ -94,20 +95,13 @@ const BookingModal = ({ show, onClose, cleaner }) => {
   // Helper to send notifications (would integrate with your notification system)
   const sendNotificationToCleaner = async (cleanerId, jobId) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-        },
-        body: JSON.stringify({
-          recipient: cleanerId,
-          type: "job_assignment",
-          title: "New Job Assignment",
-          message: `You have been assigned to a new job. Please review and confirm.`,
-          job_id: jobId,
-          action_required: true
-        })
+      await api.post(`/api/notifications/`, {
+        recipient: cleanerId,
+        type: "job_assignment",
+        title: "New Job Assignment",
+        message: `You have been assigned to a new job. Please review and confirm.`,
+        job_id: jobId,
+        action_required: true,
       });
     } catch (error) {
       console.error("Failed to send notification:", error);
@@ -117,17 +111,10 @@ const BookingModal = ({ show, onClose, cleaner }) => {
   // Helper to initialize chat channel
   const initializeChatChannel = async (jobId, employerId, cleanerId) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/channels/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-        },
-        body: JSON.stringify({
-          job_id: jobId,
-          participants: [employerId, cleanerId],
-          type: "job_discussion"
-        })
+      await api.post(`/api/chat/channels/`, {
+        job_id: jobId,
+        participants: [employerId, cleanerId],
+        type: "job_discussion",
       });
     } catch (error) {
       console.error("Failed to initialize chat:", error);

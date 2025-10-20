@@ -1,21 +1,37 @@
 // components/job-categories/CategoryIcons.jsx
 'use client'; // This component uses event handlers, so it must be a client component.
 
+import { useRouter } from 'next/navigation';
+
 export default function CategoryIcons() {
+  const router = useRouter();
+
   const categories = [
     { id: 1, name: 'Domestic', icon: '/images/icons/domestic.png', color: '#9B2C47' },
-    { id: 2, name: 'Commercial', icon: 'images/icons/commercial.png', color: '#2563EB' },
+    { id: 2, name: 'Commercial', icon: '/images/icons/commercial.png', color: '#2563EB' },
     { id: 3, name: 'Biohazard', icon: '/images/icons/biohazard.png', color: '#10B981' },
     { id: 4, name: 'Carpet and Floor', icon: '/images/icons/CarpetandFloor.png', color: '#9B2C47' },
     { id: 5, name: 'Construction', icon: '/images/icons/construction.png', color: '#F59E0B' }
   ];
+
+  const handleClick = (name) => {
+    // Navigate to Find Cleaners pre-filtered by the selected service
+    const service = encodeURIComponent(name);
+    router.push(`/cleaners?service=${service}`);
+  };
 
   return (
     <>
       <div className="category-section">
         <div className="category-container">
           {categories.map(cat => (
-            <button key={cat.id} className="category-item">
+            <button
+              key={cat.id}
+              type="button"
+              className="category-item"
+              onClick={() => handleClick(cat.name)}
+              aria-label={`View cleaners for ${cat.name}`}
+            >
               <div className="category-icon" style={{ backgroundColor: `${cat.color}20` }}>
                 <img src={cat.icon} alt={cat.name} />
               </div>

@@ -1,17 +1,8 @@
 // store/slices/bookingSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "@/utils/axiosConfig";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-
-// Helper to get auth headers
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("access_token");
-  return {
-    Authorization: token ? `Bearer ${token}` : "",
-    "Content-Type": "application/json",
-  };
-};
 
 // Fetch all bookings
 export const fetchBookings = createAsyncThunk(
@@ -19,9 +10,8 @@ export const fetchBookings = createAsyncThunk(
   async (filters = {}, { rejectWithValue }) => {
     try {
       const params = new URLSearchParams(filters).toString();
-      const response = await axios.get(
-        `${API_URL}/api/job-bookings/${params ? `?${params}` : ""}`,
-        { headers: getAuthHeaders() }
+      const response = await api.get(
+        `/api/job-bookings/${params ? `?${params}` : ""}`
       );
       // The API returns an array directly
       return Array.isArray(response.data) ? response.data : [];
@@ -37,13 +27,12 @@ export const createBooking = createAsyncThunk(
   "bookings/createBooking",
   async ({ jobId, cleanerId }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/api/job-bookings/book/`,
+      const response = await api.post(
+        `/api/job-bookings/book/`,
         {
           job: parseInt(jobId),
           cleaner: parseInt(cleanerId),
-        },
-        { headers: getAuthHeaders() }
+        }
       );
       
       // Store booking ID for quick access
@@ -63,10 +52,9 @@ export const confirmBooking = createAsyncThunk(
   "bookings/confirmBooking",
   async (bookingId, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/api/job-bookings/${bookingId}/confirm/`,
-        {},
-        { headers: getAuthHeaders() }
+      const response = await api.post(
+        `/api/job-bookings/${bookingId}/confirm/`,
+        {}
       );
       return { ...response.data, bookingId };
     } catch (error) {
@@ -97,10 +85,9 @@ export const processPayment = createAsyncThunk(
       localStorage.setItem("lastPaymentMethod", paymentMethod);
       localStorage.setItem("lastPaymentReference", paymentReference);
       
-      const response = await axios.post(
-        `${API_URL}/api/job-bookings/${bookingId}/pay/`,
-        { payment_reference: paymentReference },
-        { headers: getAuthHeaders() }
+      const response = await api.post(
+        `/api/job-bookings/${bookingId}/pay/`,
+        { payment_reference: paymentReference }
       );
       
       return { ...response.data, bookingId, paymentReference };
@@ -115,10 +102,9 @@ export const completeBooking = createAsyncThunk(
   "bookings/completeBooking",
   async (bookingId, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/api/job-bookings/${bookingId}/complete/`,
-        {},
-        { headers: getAuthHeaders() }
+      const response = await api.post(
+        `/api/job-bookings/${bookingId}/complete/`,
+        {}
       );
       return { ...response.data, bookingId };
     } catch (error) {
@@ -132,10 +118,9 @@ export const reviewCleaner = createAsyncThunk(
   "bookings/reviewCleaner",
   async ({ bookingId, rating, comment }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/api/job-bookings/${bookingId}/review-cleaner/`,
-        { rating, comment },
-        { headers: getAuthHeaders() }
+      const response = await api.post(
+        `/api/job-bookings/${bookingId}/review-cleaner/`,
+        { rating, comment }
       );
       return response.data;
     } catch (error) {
@@ -149,10 +134,9 @@ export const reviewEmployer = createAsyncThunk(
   "bookings/reviewEmployer",
   async ({ bookingId, rating, comment }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/api/job-bookings/${bookingId}/review-employer/`,
-        { rating, comment },
-        { headers: getAuthHeaders() }
+      const response = await api.post(
+        `/api/job-bookings/${bookingId}/review-employer/`,
+        { rating, comment }
       );
       return response.data;
     } catch (error) {

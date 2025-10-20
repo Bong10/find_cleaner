@@ -44,8 +44,18 @@ const JobSingleDynamicV1 = ({ params }) => {
   // Get auth state
   const auth = useSelector((s) => s.auth) || {};
   const authUser = auth.user || auth.authUser || null;
-  const isLoggedIn = Boolean(auth?.isLoggedIn) || Boolean(auth?.isAuthenticated) || Boolean(authUser);
-  const isCleaner = Boolean(authUser?.is_cleaner) || authUser?.role === "cleaner";
+  const roleName = String(authUser?.role || "").toLowerCase();
+  const isLoggedIn =
+    Boolean(auth?.isLoggedIn) ||
+    Boolean(auth?.isAuthenticated) ||
+    Boolean(authUser) ||
+    Boolean(auth?.tokens?.access);
+  const isCleaner =
+    Boolean(authUser?.is_cleaner) ||
+    roleName === "cleaner" ||
+    roleName === "candidate" ||
+    Boolean(authUser?.cleaner_profile) ||
+    Boolean(authUser?.isCleaner);
   
   // Get shortlist state
   const shortlistState = useSelector((s) => s.shortlist) || {};
@@ -488,8 +498,8 @@ const JobSingleDynamicV1 = ({ params }) => {
                   </ul>
                 </div>
 
-                <div className="btn-box">
-                  {isCleaner ? (
+                {isCleaner && (
+                  <div className="btn-box">
                     <button
                       className="theme-btn btn-style-one"
                       onClick={() => setShowApplyModal(true)}
@@ -499,25 +509,18 @@ const JobSingleDynamicV1 = ({ params }) => {
                       {checkingApplication ? "Checking..." : 
                        hasApplied ? "✓ Already Applied" : "Apply For Job"}
                     </button>
-                  ) : (
-                    <button
-                      className="theme-btn btn-style-one"
-                      onClick={() => router.push(`/login?next=/job-single-v1/${id}`)}
+
+                    <button 
+                      className="bookmark-btn"
+                      onClick={handleShortlistToggle}
                     >
-                      Login to Apply
+                      <i 
+                        className={isShortlisted ? "la la-bookmark" : "la la-bookmark-o"}
+                        style={isShortlisted ? { color: '#ef4444' } : {}}
+                      ></i>
                     </button>
-                  )}
-                  
-                  <button 
-                    className="bookmark-btn"
-                    onClick={handleShortlistToggle}
-                  >
-                    <i 
-                      className={isShortlisted ? "la la-bookmark" : "la la-bookmark-o"}
-                      style={isShortlisted ? { color: '#ef4444' } : {}}
-                    ></i>
-                  </button>
-                </div>
+                  </div>
+                )}
 
                 {/* Apply Modal */}
                 {showApplyModal && !hasApplied && (

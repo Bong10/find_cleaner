@@ -8,8 +8,16 @@ import CopyrightFooter from "../../CopyrightFooter";
 import JobAlertsTable from "./components/JobAlertsTable";
 import DashboardCandidatesHeader from "../../../header/DashboardCandidatesHeader";
 import MenuToggler from "../../MenuToggler";
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import { fetchNotifications, fetchNotificationsUnreadCount } from '@/store/slices/notificationsSlice';
 
 const index = () => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchNotifications());
+    dispatch(fetchNotificationsUnreadCount());
+  }, [dispatch]);
   return (
     <div className="page-wrapper dashboard">
       <span className="header-span"></span>

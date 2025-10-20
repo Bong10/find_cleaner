@@ -9,27 +9,37 @@ import { useDispatch, useSelector } from "react-redux";
 import { menuToggle } from "../../features/toggle/toggleSlice";
 import { usePathname } from "next/navigation";
 import { performLogout } from "@/store/slices/authSlice"; // ← use your existing thunk
+import { useState } from "react";
+import ConfirmModal from "@/components/common/ConfirmModal";
 
 const DashboardEmployerSidebar = () => {
   const { menu } = useSelector((state) => state.toggle);
   const dispatch = useDispatch();
   const pathname = usePathname(); // keep everything else the same
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const menuToggleHandler = () => {
     dispatch(menuToggle());
   };
 
-  const handleLogoutClick = async (e) => {
+  const handleLogoutClick = (e) => {
     e.preventDefault();
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    setIsLoggingOut(true);
+    setShowLogoutConfirm(false);
     try {
       await dispatch(performLogout());
     } finally {
-      // hard reload + replace history to land user out of authed context
-      if (typeof window !== "undefined") window.location.replace("/");
+      if (typeof window !== "undefined") window.location.replace("/login");
     }
   };
 
   return (
+    <>
     <div className={`user-sidebar ${menu ? "sidebar_open" : ""}`}>
       {/* Start sidebar close icon */}
       <div className="pro-header text-end pb-0 mb-0 show-1023">
@@ -66,6 +76,19 @@ const DashboardEmployerSidebar = () => {
         </ul>
       </div>
     </div>
+    {/* Logout Confirmation Modal */}
+    <ConfirmModal
+      isOpen={showLogoutConfirm}
+      onClose={() => !isLoggingOut && setShowLogoutConfirm(false)}
+      onConfirm={handleConfirmLogout}
+      title="Confirm Logout"
+      message="Are you sure you want to logout? You'll need to sign in again to access your dashboard."
+      confirmText={isLoggingOut ? "Logging out..." : "Yes, Logout"}
+      cancelText="Cancel"
+      confirmStyle="primary"
+      icon="la-sign-out-alt"
+    />
+    </>
   );
 };
 

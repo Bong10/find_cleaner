@@ -12,7 +12,7 @@ const RegBanner = () => {
       bannerClass: "banner-style-one",
       primaryButton: {
         text: "Find Cleaners",
-        href: "/find-cleaners",
+        href: "/cleaners",
         className: "btn btn-primary"
       },
       secondaryButton: {
@@ -31,7 +31,7 @@ const RegBanner = () => {
       bannerClass: "banner-style-two dark",
       primaryButton: {
         text: "Browse Employer Jobs",
-        href: "/browse-jobs",
+        href: "/jobs",
         className: "btn btn-primary bt-green"
       },
       secondaryButton: {

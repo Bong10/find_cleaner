@@ -3,16 +3,17 @@ import { useSelector } from "react-redux";
 import { 
   selectAppliedJobsCount,
   selectJobAlertsCount, 
-  selectMessagesCount,
   selectShortlistCount,
   selectMetricsLoading
 } from '@/store/slices/metricsSlice';
+import { selectUnreadCount } from '@/store/slices/messagesSlice';
 
 const TopCardBlock = () => {
   // Use selectors instead of direct state access
   const appliedJobs = useSelector(selectAppliedJobsCount);
   const jobAlerts = useSelector(selectJobAlertsCount);
-  const messages = useSelector(selectMessagesCount);
+  // Use global unread messages count from messages slice
+  const messages = useSelector(selectUnreadCount) || 0;
   const shortlist = useSelector(selectShortlistCount);
   const loading = useSelector(selectMetricsLoading);
 

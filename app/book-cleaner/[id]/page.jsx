@@ -8,7 +8,17 @@ import DefaulHeader from "@/components/header/DefaulHeader2";
 import MobileMenu from "@/components/header/MobileMenu";
 import FooterDefault from "@/components/footer/common-footer";
 import { fetchMyJobs, selectMyJobs } from "@/store/slices/myJobsSlice";
-import { updateJobField, setJobServices, resetJobForm } from "@/store/slices/jobsSlice";
+import { 
+  updateJobField, 
+  setJobServices, 
+  resetJobForm, 
+  submitJob,
+  selectJobForm,
+  selectJobSubmitting,
+  selectJobCreated
+} from "@/store/slices/jobsSlice";
+import { createBooking } from "@/store/slices/bookingSlice";
+import { loadServices } from "@/store/slices/servicesSlice";
 import Image from "next/image";
 
 // Import booking steps components
@@ -29,8 +39,9 @@ const BookCleanerPage = ({ params }) => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cleanerData, setCleanerData] = useState(null);
-  const [services, setServices] = useState([]);
   const [openJobs, setOpenJobs] = useState([]);
+  const [newJobId, setNewJobId] = useState(null);
+  const [bookingCompleted, setBookingCompleted] = useState(false);
   
   // Redux state
   const { user, isAuthenticated } = useSelector((state) => state.auth) || {};
@@ -39,32 +50,27 @@ const BookCleanerPage = ({ params }) => {
   const { items: allJobs = [], status: jobsStatus } = useSelector(selectMyJobs);
   const jobsLoading = jobsStatus === "loading";
   
-  // Job form state
-  const jobForm = useSelector((state) => state.jobs?.form) || {
-    title: "",
-    description: "",
-    location: "",
-    date: "",
-    time: "",
-    hourly_rate: "",
-    hours_required: 1,
-    services: [],
-  };
+  // Get booking state
+  const { loading: bookingLoading, error: bookingError } = useSelector((state) => state.bookings);
+  
+  // Get job form state from jobsSlice
+  const jobForm = useSelector(selectJobForm);
+  const jobSubmitting = useSelector(selectJobSubmitting);
+  const createdJob = useSelector(selectJobCreated);
+  
+  // Get services from servicesSlice
+  const { list: services, loading: servicesLoading } = useSelector((state) => state.services);
   
   // Check if user is employer
   const roleName = String(user?.role || "").toLowerCase();
   const isEmployer = roleName === "employer";
   
   useEffect(() => {
-    // Filter only open jobs (status 'o' or 'open')
+    // Filter only open jobs
     const filteredOpenJobs = allJobs.filter(job => {
       const status = String(job.status || '').toLowerCase();
-      // Only consider jobs with status 'o' or 'open' as truly open
       return status === 'o' || status === 'open';
     });
-    
-    console.log('All jobs:', allJobs.length, 'Open jobs:', filteredOpenJobs.length);
-    console.log('Job statuses:', allJobs.map(j => ({ title: j.title, status: j.status })));
     
     setOpenJobs(filteredOpenJobs);
   }, [allJobs]);
@@ -99,58 +105,58 @@ const BookCleanerPage = ({ params }) => {
       router.push('/candidates-list-v1');
     }
     
-    // Fetch jobs using myJobsSlice pattern - with refresh to get latest status
+    // Fetch jobs using myJobsSlice
     dispatch(fetchMyJobs({ months: 6, refresh: true }));
     
-    // Fetch services directly from API
-    fetchServices();
+    // Load services from backend using servicesSlice
+    if (!services || services.length === 0) {
+      dispatch(loadServices());
+    }
     
     // Reset job form
-    if (typeof resetJobForm === 'function') {
-      dispatch(resetJobForm());
-    }
+    dispatch(resetJobForm());
   }, [dispatch, isAuthenticated, isEmployer, cleanerId, router]);
   
-  const fetchServices = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/services/`, {
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        }
-      });
+  // Handle when job is created successfully for new job booking
+  useEffect(() => {
+    if (createdJob && bookingMode === "create" && !newJobId && !bookingCompleted) {
+      const jobId = createdJob.id || createdJob.job_id || createdJob.pk;
       
-      if (response.ok) {
-        const data = await response.json();
-        setServices(data.results || data || []);
+      if (jobId) {
+        setNewJobId(jobId);
+        
+        // Create booking immediately without additional messages
+        dispatch(createBooking({ 
+          jobId: parseInt(jobId), 
+          cleanerId: parseInt(cleanerId) 
+        })).unwrap()
+          .then(() => {
+            setBookingCompleted(true);
+            // Single success message
+            toast.success("Cleaner successfully booked!");
+            // Quick redirect
+            setTimeout(() => {
+              router.push('/employers-dashboard/manage-jobs');
+            }, 500);
+          })
+          .catch((error) => {
+            toast.error(`Booking failed: ${error}`);
+            setIsSubmitting(false);
+          });
       } else {
-        // Use default services if API fails
-        setServices([
-          { id: 1, name: "House Cleaning" },
-          { id: 2, name: "Office Cleaning" },
-          { id: 3, name: "Deep Cleaning" },
-          { id: 4, name: "Window Cleaning" },
-          { id: 5, name: "Carpet Cleaning" },
-          { id: 6, name: "End of Tenancy Cleaning" },
-          { id: 7, name: "After Builders Cleaning" },
-          { id: 8, name: "Move In/Out Cleaning" }
-        ]);
+        toast.error("Failed to create job");
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error("Error fetching services:", error);
-      // Use default services
-      setServices([
-        { id: 1, name: "House Cleaning" },
-        { id: 2, name: "Office Cleaning" },
-        { id: 3, name: "Deep Cleaning" },
-        { id: 4, name: "Window Cleaning" },
-        { id: 5, name: "Carpet Cleaning" },
-        { id: 6, name: "End of Tenancy Cleaning" },
-        { id: 7, name: "After Builders Cleaning" },
-        { id: 8, name: "Move In/Out Cleaning" }
-      ]);
     }
-  };
+  }, [createdJob, bookingMode, newJobId, bookingCompleted, dispatch, cleanerId, router]);
+  
+  // Handle booking error
+  useEffect(() => {
+    if (bookingError && isSubmitting && !bookingCompleted) {
+      toast.error(bookingError);
+      setIsSubmitting(false);
+    }
+  }, [bookingError, isSubmitting, bookingCompleted]);
   
   const handleModeSelection = (mode) => {
     setBookingMode(mode);
@@ -169,160 +175,73 @@ const BookCleanerPage = ({ params }) => {
   };
   
   const handleCreateJobNext = () => {
+    // Validate the form before proceeding
+    const f = jobForm;
+    
+    if (!f.title?.trim()) {
+      toast.error("Please enter a job title");
+      return;
+    }
+    if (!f.description?.trim()) {
+      toast.error("Please enter a job description");
+      return;
+    }
+    if (!f.location?.trim()) {
+      toast.error("Please enter a location");
+      return;
+    }
+    if (!f.date) {
+      toast.error("Please select a date");
+      return;
+    }
+    if (!f.time) {
+      toast.error("Please select a time");
+      return;
+    }
+    if (!f.services || f.services.length === 0) {
+      toast.error("Please select at least one service");
+      return;
+    }
+    
     setCurrentStep(3);
   };
   
   const handleConfirmBooking = async () => {
     setIsSubmitting(true);
+    
     try {
-      const token = localStorage.getItem('access_token');
-      
       if (bookingMode === "existing") {
-        // Get the job ID - checking different possible field names
+        // Book with existing job
         const jobId = selectedJob.job_id || selectedJob.id || selectedJob.pk;
         
-        console.log("Booking with existing job:", {
-          job: jobId,
-          cleaner: parseInt(cleanerId),
-          selectedJob: selectedJob
-        });
-        
-        // First, create the booking/application
-        const bookingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/job-bookings/book/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            job: parseInt(jobId),
-            cleaner: parseInt(cleanerId),
-            status: 'accepted', // Set as accepted immediately since employer is booking
-            cover_letter: `Direct booking by employer for ${selectedJob.title}`
-          })
-        });
-        
-        const bookingData = await bookingResponse.json();
-        console.log("Booking response:", bookingData);
-        
-        if (bookingResponse.ok) {
-          // Update job status to taken
-          const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/jobs/${jobId}/`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              status: 't' // 't' for taken
-            })
-          });
-          
-          if (updateResponse.ok) {
-            toast.success("🎉 Cleaner booked successfully! Job status updated to Taken.");
-            // Refresh jobs to get updated status
-            dispatch(fetchMyJobs({ months: 6, refresh: true }));
-            router.push('/employers-dashboard/manage-jobs');
-          } else {
-            // Booking created but status update failed - still navigate
-            toast.success("🎉 Cleaner booked successfully!");
-            router.push('/employers-dashboard/manage-jobs');
-          }
-        } else {
-          // Check if it's a duplicate booking error
-          if (bookingData.detail?.includes('already') || bookingData.non_field_errors) {
-            toast.warning("This cleaner has already been booked for this job.");
-          } else {
-            throw new Error(bookingData.detail || bookingData.error || "Booking failed");
-          }
+        if (!jobId) {
+          throw new Error("Job ID not found");
         }
+        
+        // Create booking
+        await dispatch(createBooking({ 
+          jobId: parseInt(jobId), 
+          cleanerId: parseInt(cleanerId) 
+        })).unwrap();
+        
+        setBookingCompleted(true);
+        // Single success message
+        toast.success("Cleaner successfully booked!");
+        // Quick redirect
+        setTimeout(() => {
+          router.push('/employers-dashboard/manage-jobs');
+        }, 500);
+        
       } else {
-        // Create job first
-        const jobData = {
-          title: jobForm.title,
-          description: jobForm.description,
-          location: jobForm.location,
-          date: jobForm.date,
-          time: jobForm.time,
-          hourly_rate: parseFloat(jobForm.hourly_rate) || 20,
-          hours_required: parseInt(jobForm.hours_required) || 1,
-          services: jobForm.services.map(id => parseInt(id)),
-          status: 'o' // Start as open
-        };
-        
-        console.log("Creating job with data:", jobData);
-        
-        const jobResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/jobs/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(jobData)
-        });
-        
-        const jobResponseData = await jobResponse.json();
-        console.log("Job creation response:", jobResponseData);
-        
-        if (jobResponse.ok) {
-          const newJob = jobResponseData;
-          
-          // Create booking/application for the new job
-          console.log("Booking cleaner with new job:", {
-            job: newJob.id,
-            cleaner: parseInt(cleanerId)
-          });
-          
-          const bookingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/job-applications/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              job: parseInt(newJob.id),
-              cleaner: parseInt(cleanerId),
-              status: 'accepted',
-              cover_letter: `Direct booking by employer for ${newJob.title}`
-            })
-          });
-          
-          const bookingResponseData = await bookingResponse.json();
-          console.log("Booking response:", bookingResponseData);
-          
-          if (bookingResponse.ok) {
-            // Update the newly created job status to taken
-            const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/jobs/${newJob.id}/`, {
-              method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({
-                status: 't' // 't' for taken
-              })
-            });
-            
-            if (updateResponse.ok) {
-              toast.success("🎉 Job created and cleaner booked successfully!");
-              dispatch(fetchMyJobs({ months: 6, refresh: true }));
-              router.push('/employers-dashboard/manage-jobs');
-            } else {
-              // Job and booking created but status update failed
-              toast.success("🎉 Job created and cleaner booked!");
-              router.push('/employers-dashboard/manage-jobs');
-            }
-          } else {
-            throw new Error(bookingResponseData.detail || bookingResponseData.error || "Booking failed");
-          }
-        } else {
-          throw new Error(jobResponseData.detail || jobResponseData.error || "Job creation failed");
-        }
+        // Create new job - the booking will be handled in useEffect
+        setNewJobId(null);
+        setBookingCompleted(false);
+        dispatch(submitJob());
       }
+      
     } catch (error) {
       console.error("Booking failed:", error);
-      toast.error(error.message || "Booking failed. Please try again.");
-    } finally {
+      toast.error(`Booking failed: ${error.message || error}`);
       setIsSubmitting(false);
     }
   };
@@ -434,13 +353,13 @@ const BookCleanerPage = ({ params }) => {
             {currentStep === 1 && (
               <SelectionStep 
                 onSelectMode={handleModeSelection}
-                jobsCount={openJobs.length} // Pass open jobs count, not all jobs
+                jobsCount={openJobs.length}
               />
             )}
             
             {currentStep === 2 && bookingMode === "existing" && (
               <JobListStep 
-                jobs={openJobs} // Pass only open jobs
+                jobs={openJobs}
                 loading={jobsLoading}
                 onSelectJob={handleJobSelection}
                 onBack={handleBack}
@@ -455,7 +374,10 @@ const BookCleanerPage = ({ params }) => {
               <JobFormStep
                 jobForm={jobForm}
                 services={services}
+                servicesLoading={servicesLoading}
                 dispatch={dispatch}
+                updateJobField={updateJobField}
+                setJobServices={setJobServices}
                 onNext={handleCreateJobNext}
                 onBack={handleBack}
               />
@@ -468,7 +390,7 @@ const BookCleanerPage = ({ params }) => {
                 selectedJob={selectedJob}
                 jobForm={jobForm}
                 bookingMode={bookingMode}
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmitting || bookingLoading || jobSubmitting}
                 onConfirm={handleConfirmBooking}
                 onBack={() => setCurrentStep(2)}
               />

@@ -37,10 +37,10 @@ const DashboardCandidatesSidebar = () => {
       await dispatch(performLogout());
       toast.success("Logged out successfully");
       
-      // Redirect after a short delay
+      // Redirect to login directly
       setTimeout(() => {
-        window.location.replace("/");
-      }, 500);
+        window.location.replace("/login");
+      }, 200);
     } catch (error) {
       toast.error("Failed to logout. Please try again.");
       setIsLoggingOut(false);

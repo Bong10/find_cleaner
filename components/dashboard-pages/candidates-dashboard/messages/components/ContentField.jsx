@@ -1,742 +1,396 @@
-"use client";
-
-import { useState, useRef, useEffect } from "react";
+'use client';
 import Image from "next/image";
-import { toast } from "react-toastify";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchChatMessages,
+  sendMessage,
+  selectMessagesForChat,
+  selectMessagesLoading,
+  markChatAllRead,
+  fetchUnreadCount,
+  markAllMessagesReadLocal,
+} from "@/store/slices/messagesSlice";
+import { selectCurrentChat, fetchChats, setChatUnread } from "@/store/slices/chatsSlice";
+
+const PRIMARY = "#4C9A99"; // brand color
 
 const ContentField = () => {
-  const [selectedConversation, setSelectedConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [typing, setTyping] = useState(false);
-  const messagesEndRef = useRef(null);
-  const fileInputRef = useRef(null);
+  const dispatch = useDispatch();
+  const selectedChat = useSelector(selectCurrentChat);
+  const chatId = selectedChat?.id;
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const [text, setText] = useState("");
+  const messages = useSelector(selectMessagesForChat(chatId));
+  const loading = useSelector(selectMessagesLoading(chatId));
+  const endRef = useRef(null);
+
+  const cleaner = selectedChat?.cleaner;
+  const employer = selectedChat?.employer;
+
+  // For cleaner dashboard, the header shows the employer
+  const cleanerAvatar = cleaner?.user?.profile_picture || "/images/resource/candidate-1.png";
+  const employerAvatar = employer?.user?.profile_picture || "/images/resource/employer-1.png";
+  const headerName = employer?.company_name || employer?.user?.name || "Conversation";
+
+  /**
+   * Determines if a message is from the 'cleaner' (self) or 'employer' (other).
+   * @param {object} message - The message object.
+   * @returns {'cleaner' | 'employer' | 'unknown'}
+   */
+  const resolveSenderSide = (message) => {
+    if (!message || !employer || !cleaner) return 'unknown';
+
+    const senderId = message.nxSenderId ?? message.sender_user_id ?? message.sender_id ?? message.sender?.user?.id ?? message.sender?.id ?? null;
+    if (senderId === null) return 'unknown';
+
+    const employerUserIds = [employer.user?.id, employer.id].filter(Boolean).map(String);
+    const cleanerUserIds = [cleaner.user?.id, cleaner.id].filter(Boolean).map(String);
+
+    if (cleanerUserIds.includes(String(senderId))) return 'cleaner';
+    if (employerUserIds.includes(String(senderId))) return 'employer';
+
+    const senderRole = (message.nxSenderRole || message.sender_role || "").toLowerCase();
+    if (senderRole === 'cleaner' || senderRole === 'worker') return 'cleaner';
+    if (senderRole === 'employer') return 'employer';
+    
+    return 'unknown';
   };
 
+  // Load messages for the selected chat
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!chatId) return;
+    dispatch(fetchChatMessages({ chatId }));
+  }, [dispatch, chatId]);
+
+  // Mark all messages as read when a chat is opened (always run on chat change)
+  useEffect(() => {
+    if (!chatId) return;
+    // Optimistically clear unread in UI immediately
+    dispatch(setChatUnread({ chatId, unread: 0 }));
+    // Optimistically mark local messages as read so badges don't bounce
+    dispatch(markAllMessagesReadLocal(chatId));
+    // Persist to server then refresh global unread count
+    dispatch(markChatAllRead(chatId))
+      .finally(() => {
+        dispatch(fetchUnreadCount());
+      })
+      .catch(() => {});
+  }, [dispatch, chatId]);
+
+  // Auto-scroll to the latest message
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    
-    if (!newMessage.trim()) return;
-    
-    setSending(true);
+    const content = text.trim();
+    if (!content || !chatId) return;
     try {
-      // TODO: Implement send message API
-      // await sendMessage({ conversation_id: selectedConversation, message: newMessage });
-      
-      // For now, just show a toast
-      toast.info("Messaging feature coming soon!");
-      setNewMessage("");
+      await dispatch(sendMessage({ chat: chatId, content })).unwrap();
+      setText("");
+      dispatch(fetchChats()); // Refresh contact list preview
     } catch (error) {
-      toast.error("Failed to send message");
-    } finally {
-      setSending(false);
+      // Handle error silently in UI
     }
   };
 
-  const handleFileAttachment = () => {
-    fileInputRef.current?.click();
-  };
+  const isArchived = selectedChat ? selectedChat.is_active === false : false;
+  const canSendMessage = text.trim().length > 0;
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // TODO: Handle file upload
-      toast.info("File attachments coming soon!");
-    }
-  };
-
-  // Empty state - no conversation selected
-  if (!selectedConversation) {
+  if (!selectedChat) {
     return (
-      <div className="message-content" style={{
-        height: '600px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: 'linear-gradient(180deg, #ffffff 0%, #f8fafb 100%)',
-        borderRadius: '12px',
-        textAlign: 'center',
-        padding: '40px',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Decorative background elements */}
-        <div style={{
-          position: 'absolute',
-          top: '-50px',
-          right: '-50px',
-          width: '200px',
-          height: '200px',
-          background: 'linear-gradient(135deg, #1967d2 0%, #4a90e2 100%)',
-          borderRadius: '50%',
-          opacity: '0.05'
-        }}></div>
-        <div style={{
-          position: 'absolute',
-          bottom: '-30px',
-          left: '-30px',
-          width: '150px',
-          height: '150px',
-          background: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
-          borderRadius: '50%',
-          opacity: '0.05'
-        }}></div>
-
-        <div style={{
-          width: '100px',
-          height: '100px',
-          background: 'linear-gradient(135deg, #1967d2 0%, #4a90e2 100%)',
-          borderRadius: '30px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '30px',
-          boxShadow: '0 20px 40px rgba(25, 103, 210, 0.2)',
-          transform: 'rotate(-5deg)',
-          animation: 'float 3s ease-in-out infinite'
-        }}>
-          <i className="la la-comments" style={{ 
-            fontSize: '50px', 
-            color: 'white',
-            transform: 'rotate(5deg)'
-          }}></i>
+      <div className="empty-wrap">
+        <div className="empty-state">
+          <i className="fa fa-comments fa-3x mb-3" style={{ color: "#9aa0a6" }} />
+          <p className="text-muted m-0">No conversation selected</p>
+          <small className="text-muted">Pick a contact on the left to start chatting</small>
         </div>
-        
-        <h3 style={{ 
-          fontSize: '28px',
-          fontWeight: '700',
-          color: '#202124',
-          marginBottom: '12px',
-          background: 'linear-gradient(135deg, #1967d2 0%, #4a90e2 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
-        }}>
-          Welcome to Messages
-        </h3>
-        
-        <p style={{ 
-          fontSize: '16px',
-          color: '#696969',
-          maxWidth: '450px',
-          lineHeight: '1.6',
-          marginBottom: '35px'
-        }}>
-          Connect with employers directly through our secure messaging system. 
-          Start applying to jobs to begin conversations with potential employers.
-        </p>
-
-        <div style={{
-          padding: '25px',
-          background: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          maxWidth: '500px',
-          width: '100%',
-          marginBottom: '30px'
-        }}>
-          <h5 style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            marginBottom: '20px',
-            color: '#202124',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <span style={{
-              width: '32px',
-              height: '32px',
-              background: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <i className="la la-lightbulb" style={{ color: 'white', fontSize: '16px' }}></i>
-            </span>
-            Quick Tips:
-          </h5>
-          <ul style={{
-            listStyle: 'none',
-            padding: 0,
-            margin: 0
-          }}>
-            <li style={{ 
-              padding: '12px 0',
-              fontSize: '14px',
-              color: '#555',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '12px',
-              borderBottom: '1px solid #f0f0f0'
-            }}>
-              <i className="la la-check-circle" style={{ 
-                color: '#52c41a', 
-                fontSize: '18px',
-                marginTop: '1px' 
-              }}></i>
-              <span>
-                <strong style={{ color: '#202124' }}>Respond quickly</strong> - 
-                Reply to messages within 24 hours for best results
-              </span>
-            </li>
-            <li style={{ 
-              padding: '12px 0',
-              fontSize: '14px',
-              color: '#555',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '12px',
-              borderBottom: '1px solid #f0f0f0'
-            }}>
-              <i className="la la-check-circle" style={{ 
-                color: '#52c41a', 
-                fontSize: '18px',
-                marginTop: '1px' 
-              }}></i>
-              <span>
-                <strong style={{ color: '#202124' }}>Stay professional</strong> - 
-                Keep your messages clear, concise and courteous
-              </span>
-            </li>
-            <li style={{ 
-              padding: '12px 0',
-              fontSize: '14px',
-              color: '#555',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '12px'
-            }}>
-              <i className="la la-check-circle" style={{ 
-                color: '#52c41a', 
-                fontSize: '18px',
-                marginTop: '1px' 
-              }}></i>
-              <span>
-                <strong style={{ color: '#202124' }}>Share documents</strong> - 
-                Attach your CV or portfolio when requested
-              </span>
-            </li>
-          </ul>
-        </div>
-
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <button 
-            className="theme-btn btn-style-one"
-            onClick={() => window.location.href = '/job-list-v1'}
-            style={{
-              padding: '14px 30px',
-              fontSize: '15px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 15px rgba(25, 103, 210, 0.25)'
-            }}
-          >
-            <i className="la la-briefcase"></i> 
-            Browse Jobs
-          </button>
-          
-          <button 
-            style={{
-              padding: '14px 30px',
-              background: 'white',
-              border: '2px solid #e8e8e8',
-              borderRadius: '8px',
-              fontSize: '15px',
-              fontWeight: '500',
-              color: '#696969',
-              cursor: 'pointer',
-              transition: 'all 0.3s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#1967d2';
-              e.currentTarget.style.color = '#1967d2';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#e8e8e8';
-              e.currentTarget.style.color = '#696969';
-            }}
-            onClick={() => window.location.href = '/candidates-dashboard/cv-manager'}
-          >
-            <i className="la la-file-text"></i> 
-            Update CV
-          </button>
-        </div>
-
-        {/* Add animation keyframes */}
         <style jsx>{`
-          @keyframes float {
-            0% { transform: translateY(0px) rotate(-5deg); }
-            50% { transform: translateY(-10px) rotate(-5deg); }
-            100% { transform: translateY(0px) rotate(-5deg); }
+          .empty-wrap {
+            height: calc(100vh - 260px);
+            background: #fff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
           }
         `}</style>
       </div>
     );
   }
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="message-content" style={{
-        height: '600px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(180deg, #ffffff 0%, #f8fafb 100%)',
-        borderRadius: '12px'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '60px',
-            height: '60px',
-            margin: '0 auto 20px',
-            position: 'relative'
-          }}>
-            <div style={{
-              width: '100%',
-              height: '100%',
-              border: '3px solid #f0f0f0',
-              borderTop: '3px solid #1967d2',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }}></div>
-          </div>
-          <p style={{ color: '#696969', fontSize: '15px' }}>Loading messages...</p>
-          <style jsx>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="message-content" style={{
-      height: '600px',
-      display: 'flex',
-      flexDirection: 'column',
-      background: 'white',
-      borderRadius: '12px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-      overflow: 'hidden'
-    }}>
-      {/* Message Header */}
-      <div style={{
-        padding: '20px 25px',
-        borderBottom: '1px solid #e8e8e8',
-        background: 'linear-gradient(180deg, #ffffff 0%, #f8fafb 100%)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div style={{ position: 'relative' }}>
+    <>
+      <div className="chat-card">
+        {/* Header */}
+        <div className="chat-header">
+          <div className="header-left">
+            <div className="header-avatar">
               <Image
-                src="/images/resource/company-logo/1-1.png"
-                alt="Company"
-                width={45}
-                height={45}
-                style={{ 
-                  borderRadius: '50%',
-                  border: '2px solid #e8e8e8'
-                }}
+                fill
+                src={employerAvatar} // Show employer avatar in header
+                alt={headerName}
+                style={{ objectFit: "cover" }}
+                sizes="46px"
               />
-              <span style={{
-                position: 'absolute',
-                bottom: '2px',
-                right: '2px',
-                width: '12px',
-                height: '12px',
-                background: '#52c41a',
-                borderRadius: '50%',
-                border: '2px solid white'
-              }}></span>
             </div>
             <div>
-              <h5 style={{ 
-                margin: 0, 
-                fontSize: '17px', 
-                fontWeight: '600',
-                color: '#202124'
-              }}>
-                Company Name
-              </h5>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <p style={{ 
-                  margin: 0, 
-                  fontSize: '13px', 
-                  color: '#52c41a',
-                  fontWeight: '500'
-                }}>
-                  Active now
-                </p>
-                {typing && (
-                  <span style={{ 
-                    fontSize: '12px', 
-                    color: '#696969',
-                    fontStyle: 'italic'
-                  }}>
-                    • typing...
-                  </span>
-                )}
-              </div>
+              <h6 className="title">{headerName}</h6>
+              <small className="subtitle">
+                {messages.length} {messages.length === 1 ? "Message" : "Messages"}
+              </small>
             </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-              title="Voice Call"
-              style={{
-                width: '36px',
-                height: '36px',
-                background: 'white',
-                border: '1px solid #e8e8e8',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.3s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f0f5ff';
-                e.currentTarget.style.borderColor = '#1967d2';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'white';
-                e.currentTarget.style.borderColor = '#e8e8e8';
-              }}
-            >
-              <i className="la la-phone" style={{ fontSize: '18px', color: '#696969' }}></i>
-            </button>
-            <button 
-              title="Video Call"
-              style={{
-                width: '36px',
-                height: '36px',
-                background: 'white',
-                border: '1px solid #e8e8e8',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.3s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f0f5ff';
-                e.currentTarget.style.borderColor = '#1967d2';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'white';
-                e.currentTarget.style.borderColor = '#e8e8e8';
-              }}
-            >
-              <i className="la la-video" style={{ fontSize: '18px', color: '#696969' }}></i>
-            </button>
-            <button 
-              title="More Options"
-              style={{
-                width: '36px',
-                height: '36px',
-                background: 'white',
-                border: '1px solid #e8e8e8',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.3s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f0f5ff';
-                e.currentTarget.style.borderColor = '#1967d2';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'white';
-                e.currentTarget.style.borderColor = '#e8e8e8';
-              }}
-            >
-              <i className="la la-ellipsis-v" style={{ fontSize: '18px', color: '#696969' }}></i>
-            </button>
           </div>
         </div>
-      </div>
 
-      {/* Messages Area */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '25px',
-        background: '#fafbfc'
-      }}>
-        {messages.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '80px 20px'
-          }}>
-            <div style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto 20px',
-              background: 'linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%)',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <i className="la la-comments-o" style={{ 
-                fontSize: '40px', 
-                color: '#c4c4c4'
-              }}></i>
+        {/* Messages */}
+        <div className="chat-body">
+          {loading && messages.length === 0 ? (
+            <div className="loading">
+              <div className="spinner-border text-primary" role="status" />
+              <p className="text-muted mt-3">Loading messages...</p>
             </div>
-            <p style={{
-              fontSize: '15px',
-              color: '#696969'
-            }}>
-              No messages yet. Start the conversation!
-            </p>
-            <p style={{
-              fontSize: '13px',
-              color: '#969696',
-              marginTop: '8px'
-            }}>
-              Send a message to begin chatting
-            </p>
-          </div>
-        ) : (
-          <>
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                style={{
-                  marginBottom: '20px',
-                  display: 'flex',
-                  justifyContent: message.sender === 'me' ? 'flex-end' : 'flex-start',
-                  animation: 'messageSlide 0.3s ease-out'
-                }}
-              >
-                <div style={{
-                  maxWidth: '70%',
-                  padding: '14px 18px',
-                  background: message.sender === 'me' 
-                    ? 'linear-gradient(135deg, #1967d2 0%, #4a90e2 100%)' 
-                    : 'white',
-                  color: message.sender === 'me' ? 'white' : '#202124',
-                  borderRadius: '18px',
-                  borderTopLeftRadius: message.sender === 'me' ? '18px' : '4px',
-                  borderTopRightRadius: message.sender === 'me' ? '4px' : '18px',
-                  boxShadow: '0 2px 5px rgba(0,0,0,0.08)'
-                }}>
-                  <p style={{ 
-                    margin: 0, 
-                    fontSize: '14px',
-                    lineHeight: '1.5'
-                  }}>
-                    {message.text}
-                  </p>
-                  <div style={{ 
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    marginTop: '8px'
-                  }}>
-                    <span style={{ 
-                      fontSize: '11px', 
-                      opacity: message.sender === 'me' ? 0.9 : 0.6
-                    }}>
-                      {message.time}
-                    </span>
-                    {message.sender === 'me' && (
-                      <i className="la la-check-double" style={{ 
-                        fontSize: '14px',
-                        color: message.read ? '#4ade80' : 'rgba(255,255,255,0.7)'
-                      }}></i>
-                    )}
+          ) : messages.length === 0 ? (
+            <div className="empty-thread">
+              <i className="fa fa-comment-dots fa-2x mb-2" style={{ color: "#9aa0a6" }} />
+              <p className="text-muted">No messages yet. Start the conversation!</p>
+            </div>
+          ) : (
+            messages.map((m) => {
+              const senderSide = resolveSenderSide(m);
+              const isMine = senderSide === 'cleaner'; // 'Mine' is the cleaner
+
+              const messageSenderAvatar = m?.nxSenderAvatar || m?.sender?.user?.profile_picture || null;
+              const avatar = messageSenderAvatar || (isMine ? cleanerAvatar : employerAvatar);
+              
+              let timeText = "";
+              try {
+                const ts = m?.nxSentAt || m?.sent_at;
+                timeText = ts ? new Date(ts).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }) : "";
+              } catch {
+                timeText = "";
+              }
+
+              return (
+                <div key={m.id} className={`row ${isMine ? "sent" : "received"}`}>
+                  <div className="avatar">
+                    <Image
+                      fill
+                      src={avatar}
+                      alt="sender"
+                      style={{ objectFit: "cover" }}
+                      sizes="34px"
+                    />
+                  </div>
+                  <div className="bubble">
+                    <div className="content">{m.content}</div>
+                    <div className="time">{timeText}</div>
                   </div>
                 </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </>
-        )}
+              );
+            })
+          )}
+          <div ref={endRef} />
+        </div>
+
+        {/* Footer */}
+        <div className="chat-footer">
+          {isArchived ? (
+            <div className="archived">
+              <i className="fa fa-archive me-2" />
+              This chat is archived. You cannot send new messages.
+            </div>
+          ) : (
+            <form className="input-row" onSubmit={handleSendMessage}>
+              <textarea
+                className="msg-input"
+                placeholder="Type your message..."
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                rows={1}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e);
+                  }
+                }}
+              />
+              <button
+                type="submit"
+                className={`send ${canSendMessage ? "active" : ""}`}
+                disabled={!canSendMessage}
+                aria-label="Send"
+                title="Send"
+              >
+                <i className="fa fa-paper-plane" />
+              </button>
+            </form>
+          )}
+        </div>
       </div>
 
-      {/* Message Input */}
-      <form onSubmit={handleSendMessage} style={{
-        padding: '20px 25px',
-        borderTop: '1px solid #e8e8e8',
-        background: 'white'
-      }}>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={handleFileAttachment}
-              title="Attach File"
-              style={{
-                width: '40px',
-                height: '40px',
-                background: '#f8fafb',
-                border: '1px solid #e8e8e8',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.3s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f0f5ff';
-                e.currentTarget.style.borderColor = '#1967d2';
-                e.currentTarget.querySelector('i').style.color = '#1967d2';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#f8fafb';
-                e.currentTarget.style.borderColor = '#e8e8e8';
-                e.currentTarget.querySelector('i').style.color = '#696969';
-              }}
-            >
-              <i className="la la-paperclip" style={{ 
-                fontSize: '20px', 
-                color: '#696969',
-                transition: 'color 0.3s'
-              }}></i>
-            </button>
-
-            <button
-              type="button"
-              title="Add Emoji"
-              style={{
-                width: '40px',
-                height: '40px',
-                background: '#f8fafb',
-                border: '1px solid #e8e8e8',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.3s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#fff8e1';
-                e.currentTarget.style.borderColor = '#ffc107';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#f8fafb';
-                e.currentTarget.style.borderColor = '#e8e8e8';
-              }}
-              onClick={() => toast.info("Emoji picker coming soon!")}
-            >
-              <i className="la la-smile" style={{ 
-                fontSize: '20px', 
-                color: '#696969'
-              }}></i>
-            </button>
-          </div>
-          
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            style={{ display: 'none' }}
-            accept=".pdf,.doc,.docx,.txt,.jpg,.png"
-          />
-          
-          <div style={{ 
-            flex: 1,
-            position: 'relative'
-          }}>
-            <input
-              type="text"
-              placeholder="Type your message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 15px',
-                paddingRight: '120px',
-                border: '2px solid #e8e8e8',
-                borderRadius: '25px',
-                fontSize: '14px',
-                outline: 'none',
-                background: '#f8fafb',
-                transition: 'all 0.3s'
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#1967d2';
-                e.target.style.background = 'white';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#e8e8e8';
-                e.target.style.background = '#f8fafb';
-              }}
-            />
-            
-            <button
-              type="submit"
-              disabled={!newMessage.trim() || sending}
-              style={{
-                position: 'absolute',
-                right: '4px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                padding: '8px 20px',
-                background: newMessage.trim() 
-                  ? 'linear-gradient(135deg, #1967d2 0%, #4a90e2 100%)'
-                  : '#e8e8e8',
-                color: newMessage.trim() ? 'white' : '#969696',
-                border: 'none',
-                borderRadius: '20px',
-                cursor: newMessage.trim() ? 'pointer' : 'not-allowed',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'all 0.3s',
-                boxShadow: newMessage.trim() ? '0 2px 8px rgba(25, 103, 210, 0.25)' : 'none'
-              }}
-            >
-              {sending ? (
-                <i className="la la-spinner la-spin" style={{ fontSize: '16px' }}></i>
-              ) : (
-                <i className="la la-send" style={{ fontSize: '16px' }}></i>
-              )}
-              Send
-            </button>
-          </div>
-        </div>
-      </form>
-
       <style jsx>{`
-        @keyframes messageSlide {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        .chat-card {
+          display: flex;
+          flex-direction: column;
+          height: calc(100vh - 260px);
+          background: #fff;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+        .chat-header {
+          padding: 16px 20px;
+          border-bottom: 1px solid #eee;
+          background: #fff;
+        }
+        .header-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .header-avatar {
+          width: 46px;
+          height: 46px;
+          border-radius: 50%;
+          overflow: hidden;
+          position: relative;
+          border: 2px solid #f1f1f1;
+          flex-shrink: 0;
+        }
+        .title {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #1a1a1a;
+        }
+        .subtitle {
+          color: #8a8f94;
+        }
+        .chat-body {
+          flex: 1;
+          overflow-y: auto;
+          padding: 22px;
+          background: #f5f7fa;
+        }
+        .loading,
+        .empty-thread {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 28px 0;
+          color: #9aa0a6;
+        }
+        .row {
+          display: flex;
+          align-items: flex-end;
+          gap: 10px;
+          margin-bottom: 14px;
+        }
+        .row.sent {
+          flex-direction: row-reverse;
+        }
+        .avatar {
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          overflow: hidden;
+          position: relative;
+          border: 2px solid #fff;
+          box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+          flex-shrink: 0;
+        }
+        .bubble {
+          max-width: 66%;
+          background: #fff;
+          border: 1px solid #ebedf0;
+          padding: 10px 14px;
+          border-radius: 14px;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+        }
+        .row.sent .bubble {
+          background: ${PRIMARY};
+          color: #fff;
+          border: none;
+          border-bottom-right-radius: 6px;
+        }
+        .row.received .bubble {
+          border-bottom-left-radius: 6px;
+        }
+        .content {
+          font-size: 14px;
+          line-height: 1.5;
+          margin-bottom: 4px;
+          white-space: pre-wrap;
+          word-break: break-word;
+        }
+        .time {
+          font-size: 11px;
+          opacity: 0.8;
+          text-align: right;
+        }
+        .chat-footer {
+          padding: 14px 18px;
+          border-top: 1px solid #eee;
+          background: #fff;
+        }
+        .archived {
+          text-align: center;
+          color: #8a8f94;
+        }
+        .input-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .msg-input {
+          flex: 1;
+          padding: 12px 16px;
+          border: 1px solid #e0e0e0;
+          border-radius: 24px;
+          font-size: 14px;
+          resize: none;
+          max-height: 120px;
+          overflow-y: auto;
+          background: #fff;
+          transition: all 0.2s;
+          font-family: inherit;
+        }
+        .msg-input:focus {
+          outline: none;
+          border-color: ${PRIMARY};
+          box-shadow: 0 0 0 3px ${PRIMARY}20;
+        }
+        .send {
+          width: 46px;
+          height: 46px;
+          border-radius: 50%;
+          border: none;
+          background: #cfd5db;
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: not-allowed;
+          transition: all 0.2s;
+          flex-shrink: 0;
+        }
+        .send.active {
+          background: ${PRIMARY};
+          cursor: pointer;
+          box-shadow: 0 4px 12px ${PRIMARY}44;
+        }
+        .send.active:hover {
+          transform: scale(1.06);
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

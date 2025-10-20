@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchMyJobs } from "@/store/slices/myJobsSlice";
 import { loadAllApplicants } from "@/store/slices/allApplicantsSlice";
 import { selectShortlist, loadShortlist } from "@/store/slices/shortlistSlice";
+import { selectUnreadCount } from "@/store/slices/messagesSlice";
+import { selectAllChats } from "@/store/slices/chatsSlice";
 
 const TopCardBlock = () => {
   const dispatch = useDispatch();
@@ -14,6 +16,10 @@ const TopCardBlock = () => {
   const myJobs = useSelector((s) => s.myJobs);
   const allApps = useSelector((s) => s.allApplicants);
   const shortlistState = useSelector(selectShortlist);
+  // Global unread messages count from messages slice
+  const unreadMessages = useSelector(selectUnreadCount) || 0;
+  // Chats list (optional: could compute unread chats if needed)
+  const chats = useSelector(selectAllChats) || [];
 
   // ensure data is loaded (no UI changes)
   useEffect(() => {
@@ -33,8 +39,8 @@ const TopCardBlock = () => {
   const applications = allApps?.items?.length ?? 0;
   const shortlist = shortlistState?.items?.length ?? 0;
 
-  // keep Messages static for now
-  const messages = 74;
+  // messages now dynamic from messages slice (unread messages total)
+  const messages = unreadMessages;
 
   // show "…" while section is loading
   const show = (val, st) => (st === "loading" ? "…" : val);

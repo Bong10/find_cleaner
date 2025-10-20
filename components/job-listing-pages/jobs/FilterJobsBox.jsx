@@ -68,6 +68,7 @@ const FilterJobsBox = () => {
   // ===== auth (robust) =====
   const auth = useSelector((s) => s.auth) || {};
   const authUser = auth.user || auth.authUser || null;
+  const roleName = String(authUser?.role || "").toLowerCase();
 
   const isLoggedIn =
     Boolean(auth?.isLoggedIn) ||
@@ -77,7 +78,8 @@ const FilterJobsBox = () => {
 
   const isCleaner =
     Boolean(authUser?.is_cleaner) ||
-    authUser?.role === "cleaner" ||
+    roleName === "cleaner" ||
+    roleName === "candidate" ||
     Boolean(authUser?.cleaner_profile) ||
     Boolean(authUser?.isCleaner);
 
@@ -414,41 +416,43 @@ const FilterJobsBox = () => {
             </ul>
           </div>
 
-          {/* RIGHT */}
-          <div className="d-flex flex-column align-items-end ms-3" style={{ gap: 12 }}>
-            <ul className="option-list mb-0">
-              <li>
-                <button
-                  type="button"
-                  onClick={onToggleShortlist}
-                  data-text={shortlisted ? "Shortlisted" : "Shortlist"}
-                  className={shortlisted ? "active" : ""}
-                  aria-pressed={shortlisted}
-                >
-                  <span
-                    className={shortlisted ? "la la-bookmark" : "la la-bookmark-o"}
-                    style={shortlisted ? { color: "#ef4444" } : undefined}
-                  ></span>
-                </button>
-              </li>
-            </ul>
+          {/* RIGHT: show actions only for cleaners */}
+          {isCleaner && (
+            <div className="d-flex flex-column align-items-end ms-3" style={{ gap: 12 }}>
+              <ul className="option-list mb-0">
+                <li>
+                  <button
+                    type="button"
+                    onClick={onToggleShortlist}
+                    data-text={shortlisted ? "Shortlisted" : "Shortlist"}
+                    className={shortlisted ? "active" : ""}
+                    aria-pressed={shortlisted}
+                  >
+                    <span
+                      className={shortlisted ? "la la-bookmark" : "la la-bookmark-o"}
+                      style={shortlisted ? { color: "#ef4444" } : undefined}
+                    ></span>
+                  </button>
+                </li>
+              </ul>
 
-            <button
-              type="button"
-              onClick={onApply}
-              className="theme-btn btn-style-one"
-              style={{ 
-                minWidth: 140,
-                ...(hasApplied ? { 
-                  backgroundColor: '#10b981', 
-                  borderColor: '#10b981' 
-                } : {})
-              }}
-              disabled={applicationsLoading}
-            >
-              {hasApplied ? "View Applied Job" : "Apply Now"}
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={onApply}
+                className="theme-btn btn-style-one"
+                style={{ 
+                  minWidth: 140,
+                  ...(hasApplied ? { 
+                    backgroundColor: '#10b981', 
+                    borderColor: '#10b981' 
+                  } : {})
+                }}
+                disabled={applicationsLoading}
+              >
+                {hasApplied ? "View Applied Job" : "Apply Now"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );

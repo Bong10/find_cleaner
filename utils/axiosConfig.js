@@ -2,8 +2,8 @@
 import axios from "axios";
 
 const RAW_BASE_URL =
-  // process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://cgsabiozard.co.uk";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+  // process.env.NEXT_PUBLIC_API_BASE_URL || "https://cgsabiozard.co.uk";
 const BASE_URL = RAW_BASE_URL.replace(/\/+$/, ""); // strip trailing slash
 
 let isRefreshing = false;
@@ -95,9 +95,13 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         if (typeof window !== "undefined") {
-          localStorage.removeItem("access_token");
-          // Hard redirect to clear any in-memory UI state
-          // window.location.replace("/");
+          try {
+            localStorage.removeItem("access_token");
+            localStorage.setItem("auth_logged_out_at", String(Date.now()));
+            // Signal the app to force-logout without a full reload
+            localStorage.setItem("auth_force_logout", String(Date.now()));
+            window.dispatchEvent(new Event("auth:force-logout"));
+          } catch (_) {}
         }
         return Promise.reject(refreshError);
       } finally {
