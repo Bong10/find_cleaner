@@ -45,8 +45,17 @@ export const candidateFilterSlice = createSlice({
     clearExperienceF: (state) => {
       state.experiences = [];
     },
+    // NOTE: Keep both plural and singular for backwards compatibility across components
     addQualifications: (state, action) => {
       state.qualifications = action.payload;
+    },
+    addQualification: (state, action) => {
+      // alias of addQualifications for legacy imports
+      state.qualifications = action.payload;
+    },
+    clearQualificationF: (state) => {
+      // clear selected qualifications (legacy compatibility)
+      state.qualifications = [];
     },
     addSort: (state, action) => {
       state.sort = action.payload;
@@ -80,7 +89,9 @@ export const {
   addDatePost,
   addExperience,
   clearExperienceF,
+  addQualification,
   addQualifications,
+  clearQualificationF,
   addSort,
   addPerPage,
   clearAll,
