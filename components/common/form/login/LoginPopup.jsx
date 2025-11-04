@@ -1,5 +1,6 @@
 import Register from "../register/Register";
 import FormContent from "./FormContent";
+import ResetPasswordModal from "./ResetPasswordModal";
 
 const LoginPopup = () => {
   return (
@@ -59,6 +60,9 @@ const LoginPopup = () => {
         </div>
       </div>
       {/* <!-- Login Popup Modal --> */}
+
+      {/* Reset Password Modal */}
+      <ResetPasswordModal />
     </>
   );
 };

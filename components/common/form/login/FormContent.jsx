@@ -29,7 +29,7 @@ const extractErrMsg = (err) => {
   return err?.message || "Login failed";
 };
 
-const FormContent = () => {
+const FormContent = ({ signupVariant = "modal", resetVariant = "modal" }) => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
@@ -168,6 +168,20 @@ const FormContent = () => {
             disabled={isLoading}
             autoComplete="current-password"
           />
+          <div className="field-outer" style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
+            {resetVariant === 'route' ? (
+              <Link href="/forgot-password" className="pwd">Forgot password?</Link>
+            ) : (
+              <a
+                href="#"
+                className="pwd"
+                data-bs-toggle="modal"
+                data-bs-target="#resetPasswordModal"
+              >
+                Forgot password?
+              </a>
+            )}
+          </div>
         </div>
 
         <div className="form-group">
@@ -184,14 +198,20 @@ const FormContent = () => {
       <div className="bottom-box">
         <div className="text">
           Don’t have an account?{" "}
-          <Link
-            href="#"
-            className="call-modal signup"
-            data-bs-toggle="modal"
-            data-bs-target="#registerModal"
-          >
-            Signup
-          </Link>
+          {signupVariant === "modal" ? (
+            <Link
+              href="#"
+              className="call-modal signup"
+              data-bs-toggle="modal"
+              data-bs-target="#registerModal"
+            >
+              Signup
+            </Link>
+          ) : (
+            <Link href="/register" className="call-modal signup">
+              Signup
+            </Link>
+          )}
         </div>
         <div className="divider">
           <span>or</span>

@@ -47,6 +47,15 @@ api.interceptors.response.use(
     const originalRequest = error?.config || {};
     const status = error?.response?.status;
 
+    // Never attempt refresh for login endpoints; allow error to propagate with backend detail
+    const isLoginCall =
+      typeof originalRequest.url === "string" &&
+      (originalRequest.url.includes("/auth/jwt/create/") ||
+       originalRequest.url.includes("/auth/jwt/admin/create/"));
+    if (isLoginCall) {
+      return Promise.reject(error);
+    }
+
     // If we just logged out, do not try to refresh (prevents resurrection)
     if (typeof window !== "undefined") {
       const t = Number(localStorage.getItem("auth_logged_out_at") || 0);

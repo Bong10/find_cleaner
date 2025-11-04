@@ -59,7 +59,7 @@ const Index = () => {
         <div className="outer-box">
           {/* <!-- Login Form --> */}
           <div className="login-form default-form">
-            <FormContent />
+            <FormContent signupVariant="route" resetVariant="route" />
           </div>
           {/* <!--End Login Form --> */}
         </div>

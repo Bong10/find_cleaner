@@ -152,9 +152,14 @@ const authSlice = createSlice({
         state.userLoading = false;
         state.user = action.payload || null;
         state.role = action.payload?.role || null;
+        // Set isAuthenticated to true when we successfully fetch user
+        if (action.payload) {
+          state.isAuthenticated = true;
+        }
       })
       .addCase(fetchCurrentUser.rejected, (state) => {
         state.userLoading = false;
+        state.isAuthenticated = false;
       })
 
       // REHYDRATE

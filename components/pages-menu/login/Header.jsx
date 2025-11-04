@@ -33,18 +33,18 @@ const Header = () => {
               <div className="logo">
                 <Link href="/" className="noSticky">
                   <Image
-                    width={154}
+                    width={54}
                     height={50}
-                    src="/images/logo.svg"
+                    src="/images/logo.PNG"
                     alt="logo"
                     title="brand"
                   />
                 </Link>
                 <Link href="/" className="isSticky">
                   <Image
-                    width={154}
+                    width={54}
                     height={50}
-                    src="/images/logo.svg"
+                    src="/images/logo.png"
                     alt="logo"
                     title="brand"
                   />
@@ -58,10 +58,10 @@ const Header = () => {
             {/* <!-- Login/Register --> */}
             <div className="btn-box">
               <Link
-                href="/employers-dashboard/post-jobs"
+                href="/"
                 className="theme-btn btn-style-one"
               >
-                <span className="btn-title">Job Post</span>
+                <span className="btn-title">Home</span>
               </Link>
             </div>
           </div>

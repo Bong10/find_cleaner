@@ -5,7 +5,7 @@ import LoginWithSocial from './LoginWithSocial';
 import Form from './FormContent';
 import Link from 'next/link';
 
-const Register = () => {
+const Register = ({ loginVariant = 'modal', onSuccess = 'modal' }) => {
   return (
     <div className="form-inner">
       <h3>Signup for free</h3>
@@ -29,27 +29,31 @@ const Register = () => {
 
         {/* Cleaner */}
         <TabPanel>
-          <Form role="cleaner" />
+          <Form role="cleaner" onSuccess={onSuccess} />
         </TabPanel>
 
         {/* Employer */}
         <TabPanel>
-          <Form role="employer" />
+          <Form role="employer" onSuccess={onSuccess} />
         </TabPanel>
       </Tabs>
 
       <div className="bottom-box">
         <div className="text">
           Already have an account?{' '}
-          <Link
-            href="#"
-            className="call-modal login"
-            data-bs-toggle="modal"
-            data-bs-dismiss="modal"
-            data-bs-target="#loginPopupModal"
-          >
-            LogIn
-          </Link>
+          {loginVariant === 'route' ? (
+            <Link href="/login">LogIn</Link>
+          ) : (
+            <Link
+              href="#"
+              className="call-modal login"
+              data-bs-toggle="modal"
+              data-bs-dismiss="modal"
+              data-bs-target="#loginPopupModal"
+            >
+              LogIn
+            </Link>
+          )}
         </div>
         <div className="divider">
           <span>or</span>

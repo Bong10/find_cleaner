@@ -2,6 +2,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import {
@@ -10,8 +11,9 @@ import {
   resetRegisterState,
 } from '@/store/slices/registerSlice';
 
-const FormContent = ({ role = 'cleaner' }) => {
+const FormContent = ({ role = 'cleaner', onSuccess = 'modal' }) => {
   const dispatch = useDispatch();
+  const router = useRouter();
   const { cleanerLoading, cleanerError, employerLoading, employerError } =
     useSelector((s) => s.register);
 
@@ -41,6 +43,9 @@ const FormContent = ({ role = 'cleaner' }) => {
       }
     } catch {}
   };
+  const routeToLogin = () => {
+    router.push('/login');
+  };
 
   const firstError = (obj) => {
     if (!obj) return '';
@@ -64,7 +69,11 @@ const FormContent = ({ role = 'cleaner' }) => {
       setEmail('');
       setPassword('');
       dispatch(resetRegisterState());
-      closeRegisterOpenLogin();
+      if (onSuccess === 'route') {
+        routeToLogin();
+      } else {
+        closeRegisterOpenLogin();
+      }
     } else {
       toast.error(firstError(res.payload) || 'Registration failed');
     }

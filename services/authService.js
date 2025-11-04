@@ -15,6 +15,20 @@ const login = async (email, password) => {
   return response.data;
 };
 
+/**
+ * Admin Login: uses dedicated admin endpoint that only accepts admin users.
+ * Backend validates is_staff or role='Admin' before issuing token.
+ */
+const adminLogin = async (email, password) => {
+  const response = await api.post("/auth/jwt/admin/create/", { email, password });
+  const { access } = response.data || {};
+
+  if (access && typeof window !== "undefined") {
+    localStorage.setItem("access_token", access);
+  }
+  return response.data;
+};
+
 /** Register Cleaner with minimal payload (email + password only) */
 export const registerCleaner = async ({ email, password }) => {
   const { data } = await api.post("/api/users/register/cleaner/", {
@@ -80,14 +94,32 @@ export const activateAccount = async (uid, token) => {
   return data;
 };
 
+// Request password reset email (Djoser) — returns 204 No Content
+export const requestPasswordReset = async (email) => {
+  // Djoser expects { email }
+  const res = await api.post("/auth/users/reset_password/", { email });
+  return res?.data || {};
+};
+
+// Confirm new password (Djoser) — returns 204 No Content
+export const confirmPasswordReset = async ({ uid, token, new_password, re_new_password }) => {
+  const payload = { uid, token, new_password, re_new_password };
+  const res = await api.post("/auth/users/reset_password_confirm/", payload);
+  return res?.data || {};
+};
+
 const AuthService = {
   login,
+  adminLogin,
   getCurrentUser,
   refreshToken,
   logoutUser,
   registerCleaner,
   registerEmployer,
+  requestPasswordReset,
+  confirmPasswordReset,
 };
 
 export default AuthService;
+
 
