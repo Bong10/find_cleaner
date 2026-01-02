@@ -145,6 +145,10 @@ const TaskSection = () => {
           animation: scrolling-reverse 30s linear infinite;
         }
 
+        .task-container:hover {
+          animation-play-state: paused;
+        }
+
         @keyframes scrolling {
           0% {
             transform: translateX(0);
@@ -169,6 +173,7 @@ const TaskSection = () => {
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
           width: 386px;
+          min-width: 386px;
           padding: 15px;
           display: flex;
           gap: 15px;
@@ -185,6 +190,8 @@ const TaskSection = () => {
         .task-avatar {
           border-radius: 50%;
           object-fit: cover;
+          width: 64px;
+          height: 64px;
         }
 
         .task-details {
@@ -227,6 +234,68 @@ const TaskSection = () => {
         .task-rating span {
           font-size: 14px;
           color: #555;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 991px) {
+          .task-card {
+            width: 340px;
+            min-width: 340px;
+            padding: 12px;
+          }
+          
+          .task-avatar {
+            width: 56px;
+            height: 56px;
+          }
+        }
+
+        @media (max-width: 767px) {
+          .tasks-section {
+            margin-bottom: 20px;
+          }
+
+          .task-container {
+            gap: 15px;
+            padding-left: 15px;
+          }
+
+          .task-card {
+            width: 300px;
+            min-width: 300px;
+            padding: 10px;
+            gap: 12px;
+          }
+
+          .task-avatar {
+            width: 50px;
+            height: 50px;
+          }
+
+          .task-category {
+            font-size: 13px;
+            margin-bottom: 3px;
+          }
+
+          .task-title {
+            font-size: 14px;
+          }
+
+          .task-rating svg {
+            width: 18px;
+            height: 18px;
+          }
+
+          .task-rating span {
+            font-size: 13px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .task-card {
+            width: 260px;
+            min-width: 260px;
+          }
         }
       `}</style>
     </div>

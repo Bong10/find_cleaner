@@ -67,7 +67,7 @@ const AdminOverview = () => {
     <div className="admin-overview">
       <div className="dashboard-header">
         <h2>Dashboard Overview</h2>
-        <p>Welcome to the TidyLinker Admin Portal</p>
+        <p>Welcome to the Find Cleaner Admin Portal</p>
       </div>
 
       {loading ? (

@@ -2,8 +2,8 @@ import dynamic from "next/dynamic";
 import CleanerBookingManagement from "@/components/dashboard-pages/candidates-dashboard/cleaner-bookings";
 
 export const metadata = {
-  title: "My Bookings || TidyLinker - Manage Your Cleaning Jobs",
-  description: "Manage your cleaning job bookings, confirm appointments, and track your work history on TidyLinker.",
+  title: "My Bookings || Find Cleaner - Manage Your Cleaning Jobs",
+  description: "Manage your cleaning job bookings, confirm appointments, and track your work history on Find Cleaner.",
 };
 
 const index = () => {

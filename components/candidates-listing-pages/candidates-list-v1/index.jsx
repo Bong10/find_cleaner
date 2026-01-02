@@ -76,16 +76,24 @@ const Index = () => {
         else experienceValue = "10-plus-years";
       }
 
-      // Calculate average rating
+      // Calculate average rating (robust to strings/nulls)
       const reviewCount = cleaner.reviews?.length || cleaner.review_count || 0;
-      const averageRating = cleaner.average_rating || 
-                           (cleaner.reviews && cleaner.reviews.length > 0 
-                             ? cleaner.reviews.reduce((sum, r) => sum + r.rating, 0) / cleaner.reviews.length 
-                             : 0);
+      let averageRatingNum = 0;
+      if (cleaner.average_rating !== undefined && cleaner.average_rating !== null) {
+        const parsed = parseFloat(cleaner.average_rating);
+        averageRatingNum = Number.isFinite(parsed) ? parsed : 0;
+      } else if (Array.isArray(cleaner.reviews) && cleaner.reviews.length > 0) {
+        const sum = cleaner.reviews.reduce(
+          (acc, r) => acc + (parseFloat(r?.rating) || 0),
+          0
+        );
+        averageRatingNum = sum / cleaner.reviews.length;
+      }
+      if (!Number.isFinite(averageRatingNum)) averageRatingNum = 0;
 
       // Create tags
       const baseTags = cleaner.specializations?.slice(0, 3) || ["Domestic", "Deep Clean", "Professional"];
-      const ratingTag = reviewCount > 0 ? `★ ${averageRating.toFixed(1)}` : "★ 0.0";
+      const ratingTag = reviewCount > 0 ? `★ ${averageRatingNum.toFixed(1)}` : "★ 0.0";
       const tags = [...baseTags, ratingTag];
 
       // Parse date for sorting
@@ -104,7 +112,7 @@ const Index = () => {
         id: cleaner.id || userData.id,
         name: cleanerName,
         reviewCount: reviewCount,
-        averageRating: averageRating.toFixed(1),
+        averageRating: averageRatingNum.toFixed(1),
         isVerified: cleaner.is_verified || userData.is_verified || false,
         location: userData.address || "Cambridge, UK",
         destination: { min: 0, max: 100 },
@@ -211,6 +219,27 @@ const Index = () => {
   // Use filterCleaners instead of visible
   const visibleCleaners = visible;
 
+  // Helper function to get initials from name
+  const getInitials = (name) => {
+    if (!name) return "?";
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  // Helper function to generate consistent color from name
+  const getColorFromName = (name) => {
+    const colors = [
+      "#1967d2", "#2aa389", "#ea4335", "#f9ab00", "#9333ea", 
+      "#ec4899", "#14b8a6", "#f59e0b", "#8b5cf6", "#06b6d4"
+    ];
+    if (!name) return colors[0];
+    const charCode = name.charCodeAt(0) + (name.length > 1 ? name.charCodeAt(1) : 0);
+    return colors[charCode % colors.length];
+  };
+
   return (
     <>
       <LoginPopup />
@@ -264,15 +293,24 @@ const Index = () => {
                       <div className="inner-box">
                         <div className="content">
                           <figure className="image">
-                            <Image
-                              width={90}
-                              height={90}
-                              src={c.avatar}
-                              alt={c.name}
-                              onError={(e) => {
-                                e.target.src = "/images/resource/candidate-1.png";
+                            <div 
+                              style={{
+                                width: "90px",
+                                height: "90px",
+                                borderRadius: "50%",
+                                background: getColorFromName(c.name),
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "32px",
+                                fontWeight: "700",
+                                color: "#fff",
+                                border: "3px solid #fff",
+                                boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
                               }}
-                            />
+                            >
+                              {getInitials(c.name)}
+                            </div>
                           </figure>
 
                           <h4 className="name">

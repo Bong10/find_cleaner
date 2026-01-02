@@ -9,14 +9,13 @@ import Image from 'next/image';
 // Import services and Redux actions
 import { fetchCurrentUser } from '@/store/slices/authSlice';
 import { patchCurrentUser, patchCurrentUserMultipart } from '@/services/cleanerService';
-import { saveCompleteCleanerProfile, updateLocalStorageFields } from '@/store/slices/cleanerProfileSlice';
+import { saveCompleteCleanerProfile, loadCompleteCleanerProfile, updateLocalStorageFields } from '@/store/slices/cleanerProfileSlice';
 import { patchEmployerMe, getEmployerFields } from '@/services/employerService';
 
 // Import all step components
 import CleanerStep1 from './steps/CleanerStep1';
 import CleanerStep2 from './steps/CleanerStep2';
 import CleanerStep3 from './steps/CleanerStep3';
-import CleanerStep4 from './steps/CleanerStep4';
 import EmployerStep1 from './steps/EmployerStep1';
 import EmployerStep2 from './steps/EmployerStep2';
 import EmployerStep3 from './steps/EmployerStep3';
@@ -26,6 +25,7 @@ const OnboardingFlow = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const cleanerProfile = useSelector((state) => state.cleanerProfile);
   
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({});
@@ -48,6 +48,44 @@ const OnboardingFlow = () => {
     }
   }, [isAuthenticated, user, isEmployer, router]);
 
+  // Load existing profile data when component mounts
+  useEffect(() => {
+    if (isCleaner && isAuthenticated) {
+      dispatch(loadCompleteCleanerProfile());
+    }
+  }, [isCleaner, isAuthenticated, dispatch]);
+
+  // Populate formData when profile is loaded
+  useEffect(() => {
+    if (isCleaner && cleanerProfile.status === 'succeeded') {
+      const { user: profileUser, localData } = cleanerProfile;
+      
+      setFormData(prev => ({
+        ...prev,
+        ...localData,
+        // Map user fields
+        name: profileUser.name || prev.name || '',
+        phone_number: profileUser.phone_number || prev.phone_number || '',
+        gender: profileUser.gender || prev.gender || '',
+        date_of_birth: profileUser.date_of_birth || prev.date_of_birth || '',
+        address_line1: profileUser.address_line1 || prev.address_line1 || '',
+        address_line2: profileUser.address_line2 || prev.address_line2 || '',
+        city: profileUser.city || prev.city || '',
+        county: profileUser.county || prev.county || '',
+        postcode: profileUser.postcode || prev.postcode || '',
+        profile_picture: profileUser.profile_picture || prev.profile_picture || null,
+        
+        // Map cleaner specific fields
+        years_of_experience: cleanerProfile.years_of_experience || prev.years_of_experience || '',
+        dbs_check: cleanerProfile.dbs_check || prev.dbs_check || false,
+        minimum_hours: cleanerProfile.minimum_hours || prev.minimum_hours || 3,
+        service_types: cleanerProfile.service_types || prev.service_types || [],
+        service_areas: cleanerProfile.service_areas || prev.service_areas || [],
+        availability: cleanerProfile.availability || prev.availability || {},
+      }));
+    }
+  }, [cleanerProfile.status, isCleaner]);
+
   // Defines the sequence of steps for each role
   const getSteps = () => {
     if (isCleaner) {
@@ -55,8 +93,7 @@ const OnboardingFlow = () => {
         { id: 1, title: 'Personal Info', component: CleanerStep1 },
         { id: 2, title: 'Professional', component: CleanerStep2 },
         { id: 3, title: 'Verification', component: CleanerStep3 },
-        { id: 4, title: 'Pricing', component: CleanerStep4 },
-        { id: 5, title: 'Complete', component: WelcomeComplete }
+        { id: 4, title: 'Complete', component: WelcomeComplete }
       ];
     } else if (isEmployer) {
       return [
@@ -107,6 +144,56 @@ const OnboardingFlow = () => {
     return Object.keys(stepErrors).length === 0;
   };
 
+  // Validates the mandatory fields on Step 2
+  const validateStep2 = () => {
+    const stepErrors = {};
+    
+    if (isCleaner) {
+      if (!formData.years_of_experience) stepErrors.years_of_experience = 'Years of Experience is required.';
+      if (!formData.service_types || formData.service_types.length === 0) {
+        stepErrors.service_types = 'Please select at least one service type.';
+      }
+      if (!formData.minimum_hours) stepErrors.minimum_hours = 'Minimum Booking Hours is required.';
+    } else if (isEmployer) {
+      if (!formData.address_line1) stepErrors.address_line1 = 'Address Line 1 is required.';
+      if (!formData.city) stepErrors.city = 'Town/City is required.';
+      if (!formData.postcode) stepErrors.postcode = 'Postcode is required.';
+      if (!formData.property_type) stepErrors.property_type = 'Property Type is required.';
+    }
+    
+    setErrors(stepErrors);
+    return Object.keys(stepErrors).length === 0;
+  };
+
+  // Validates the mandatory fields on Step 3
+  const validateStep3 = () => {
+    const stepErrors = {};
+    
+    if (isCleaner) {
+      // ID Document validation (both front and back required)
+      if (!formData.id_document_front) stepErrors.id_document_front = 'ID Front Side is required.';
+      if (!formData.id_document_back) stepErrors.id_document_back = 'ID Back Side is required.';
+      
+      // CV is required
+      if (!formData.cv) stepErrors.cv = 'CV is required.';
+      
+      // References validation - at least professional reference required
+      const hasProfessionalRef = formData.professional_ref_name && 
+                                  formData.professional_ref_email && 
+                                  formData.professional_ref_phone;
+      const hasCharacterRef = formData.character_ref_name && 
+                              formData.character_ref_email && 
+                              formData.character_ref_phone;
+      
+      if (!hasProfessionalRef && !hasCharacterRef) {
+        stepErrors.references = 'At least one complete reference is required (Professional or Character).';
+      }
+    }
+    
+    setErrors(stepErrors);
+    return Object.keys(stepErrors).length === 0;
+  };
+
   // The single function that saves all collected data at the end
   const saveAllProgress = async () => {
     console.log('📋 Starting profile save process...');
@@ -123,138 +210,110 @@ const OnboardingFlow = () => {
       console.log('✅ Cleaner profile saved through slice');
 
       } else if (isEmployer) {
-        // ===== EMPLOYER BACKEND FIELDS =====
+        // 1. Save User-level fields (Phone, Name)
         const userPayload = {};
+        if (formData.phone_number) userPayload.phone_number = formData.phone_number;
+        if (formData.name) userPayload.name = formData.name;
         
-        if (formData.name || formData.business_name) {
-          userPayload.name = formData.name || formData.business_name;
-          console.log('✅ Preparing to save NAME to backend:', userPayload.name);
-        }
-        
-        if (formData.phone_number) {
-          userPayload.phone_number = formData.phone_number;
-          console.log('✅ Preparing to save PHONE to backend:', formData.phone_number);
-        }
-        
-        if (formData.location || formData.address) {
-          userPayload.address = formData.location || formData.address;
-          console.log('✅ Preparing to save ADDRESS to backend:', userPayload.address);
-        }
-
-        // Save User fields
         if (Object.keys(userPayload).length > 0) {
           try {
             await patchCurrentUser(userPayload);
-            saveResults.backend.success.push('Basic profile info');
-            console.log('✅ User fields saved successfully');
+            saveResults.backend.success.push('User info');
           } catch (error) {
-            saveResults.backend.failed.push('Basic profile info');
-            console.error('❌ Failed to save user fields:', error.response?.data);
-            throw new Error(`Couldn't save your basic information: ${JSON.stringify(error.response?.data || 'Unknown error')}`);
+            console.error('Failed to save user info:', error);
+            saveResults.backend.failed.push('User info');
           }
         }
 
-        // Employer Model Fields
+        // 2. Construct Employer Payload
         const employerPayload = {};
-        
-        if (formData.business_name) {
-          employerPayload.company_name = formData.business_name;
-          console.log('✅ Preparing to save COMPANY NAME to backend');
-        }
-        
-        if (formData.about) {
-          employerPayload.about = formData.about;
-          console.log('✅ Preparing to save ABOUT to backend');
+
+        // Business Name
+        employerPayload.business_name = formData.business_name || formData.name || 'My Business';
+
+        // Location (Combine address fields)
+        const addressParts = [
+          formData.address_line1,
+          formData.address_line2,
+          formData.city,
+          formData.county,
+          formData.postcode
+        ].filter(Boolean);
+        if (addressParts.length > 0) {
+          employerPayload.location = addressParts.join(', ');
         }
 
-        // Save Employer fields
-        if (Object.keys(employerPayload).length > 0) {
-          try {
-            await patchEmployerMe(employerPayload);
-            saveResults.backend.success.push('Business info');
-            console.log('✅ Employer fields saved successfully');
-          } catch (error) {
-            saveResults.backend.failed.push('Business info');
-            console.error('❌ Failed to save employer fields:', error.response?.data);
-            throw new Error(`Couldn't save your business information: ${JSON.stringify(error.response?.data || 'Unknown error')}`);
-          }
+        // Property Details
+        if (formData.property_type) employerPayload.property_type = formData.property_type;
+        if (formData.bedrooms) employerPayload.bedrooms = formData.bedrooms;
+        if (formData.bathrooms) employerPayload.bathrooms = formData.bathrooms;
+        if (formData.toilets) employerPayload.toilets = formData.toilets;
+        if (formData.kitchens) employerPayload.kitchens = formData.kitchens;
+        if (formData.rooms) employerPayload.rooms = formData.rooms;
+
+        // Parking & Access
+        employerPayload.parking_available = formData.parking_available === true;
+        employerPayload.elevator_access = formData.elevator_access === true;
+
+        // Cleaning Needs
+        if (formData.service_frequency) employerPayload.cleaning_frequency = formData.service_frequency;
+        if (formData.preferred_time) employerPayload.preferred_time = formData.preferred_time;
+        
+        // Priorities
+        if (formData.cleaning_priorities && Array.isArray(formData.cleaning_priorities)) {
+          employerPayload.cleaning_priorities = formData.cleaning_priorities;
         }
 
-        // Profile Picture
+        // Pets
+        employerPayload.pets_in_property = formData.pets === true;
+
+        // Supplies
+        if (formData.supplies_provided) {
+          employerPayload.cleaning_supplies = formData.supplies_provided === 'yes';
+        }
+
+        // Special Requirements & Custom Priority
+        let specs = formData.special_requirements || '';
+        if (formData.custom_priority) {
+          specs += (specs ? '\n\n' : '') + 'Other Priority: ' + formData.custom_priority;
+        }
+        if (specs) employerPayload.special_requirements = specs;
+
+        console.log('🚀 Sending Employer Payload:', employerPayload);
+
+        // 3. Send Employer Payload
+        try {
+          await patchEmployerMe(employerPayload);
+          saveResults.backend.success.push('Employer Profile');
+        } catch (error) {
+          console.error('Failed to save employer profile:', error.response?.data);
+          saveResults.backend.failed.push('Employer Profile');
+          throw new Error(`Failed to save profile: ${JSON.stringify(error.response?.data)}`);
+        }
+
+        // 4. Profile Picture (Multipart)
         if (formData.profile_picture instanceof File) {
           try {
             const picFormData = new FormData();
             picFormData.append('profile_picture', formData.profile_picture);
             await patchCurrentUserMultipart(picFormData);
             saveResults.backend.success.push('Profile picture');
-            console.log('✅ Profile picture uploaded successfully');
           } catch (error) {
-            saveResults.backend.failed.push('Profile picture');
-            console.error('❌ Failed to upload profile picture:', error.response?.data);
+            console.error('Failed to upload profile picture:', error);
           }
-        }
-
-        // ===== EMPLOYER LOCALSTORAGE FIELDS =====
-        const localStorageFields = {};
-        
-        // Property details
-        const propertyFields = [
-          'account_type', 'property_type', 'property_size', 
-          'bedrooms', 'bathrooms', 'parking_available', 
-          'elevator_access', 'pets'
-        ];
-        
-        propertyFields.forEach(field => {
-          if (formData[field] !== undefined) {
-            localStorageFields[field] = formData[field];
-            console.log(`📦 Storing ${field} in localStorage:`, formData[field]);
-          }
-        });
-
-        // Cleaning preferences
-        const cleaningFields = [
-          'access_instructions', 'cleaning_priorities', 
-          'special_requirements', 'supplies_provided'
-        ];
-        
-        cleaningFields.forEach(field => {
-          if (formData[field] !== undefined) {
-            localStorageFields[field] = formData[field];
-            console.log(`📦 Storing ${field} in localStorage:`, formData[field]);
-          }
-        });
-
-        // Service preferences
-        const serviceFields = [
-          'service_frequency', 'preferred_time', 
-          'budget_min', 'budget_max', 'email_notifications'
-        ];
-        
-        serviceFields.forEach(field => {
-          if (formData[field] !== undefined) {
-            localStorageFields[field] = formData[field];
-            console.log(`📦 Storing ${field} in localStorage:`, formData[field]);
-          }
-        });
-
-        // Save to localStorage
-        if (Object.keys(localStorageFields).length > 0) {
-          localStorage.setItem('employer_preferences', JSON.stringify(localStorageFields));
-          saveResults.localStorage.success.push('Property & cleaning preferences');
-          console.log('✅ All preferences saved to localStorage:', localStorageFields);
         }
       }
 
       // Summary
       console.log('====== SAVE SUMMARY ======');
       console.log('✅ Saved to backend:', saveResults.backend.success.join(', ') || 'Nothing');
-      console.log('✅ Saved to localStorage:', saveResults.localStorage.success.join(', ') || 'Nothing');
+      // console.log('✅ Saved to localStorage:', saveResults.localStorage.success.join(', ') || 'Nothing');
       if (saveResults.backend.failed.length > 0) {
         console.log('❌ Failed backend saves:', saveResults.backend.failed.join(', '));
       }
-      if (saveResults.localStorage.failed.length > 0) {
-        console.log('❌ Failed localStorage saves:', saveResults.localStorage.failed.join(', '));
-      }
+      // if (saveResults.localStorage.failed.length > 0) {
+      //   console.log('❌ Failed localStorage saves:', saveResults.localStorage.failed.join(', '));
+      // }
 
     } catch (error) {
       console.error('Profile save failed:', error);
@@ -265,7 +324,15 @@ const OnboardingFlow = () => {
   // Navigation handler for the "Next" button
   const handleNext = () => {
     if (currentStep === 1 && !validateStep1()) {
-      toast.error('Please complete this required step before proceeding.');
+      toast.error('Please complete all required fields before proceeding.');
+      return;
+    }
+    if (currentStep === 2 && !validateStep2()) {
+      toast.error('Please complete all required fields before proceeding.');
+      return;
+    }
+    if (currentStep === 3 && !validateStep3()) {
+      toast.error('Please complete all required fields before proceeding.');
       return;
     }
     if (currentStep < totalSteps) {
@@ -281,7 +348,15 @@ const OnboardingFlow = () => {
   // Navigation handler for the "Skip to Final Step" button
   const handleSkipToEnd = () => {
     if (currentStep === 1 && !validateStep1()) {
-      toast.error('Please complete this required step before skipping.');
+      toast.error('Please complete all required fields before skipping.');
+      return;
+    }
+    if (currentStep === 2 && !validateStep2()) {
+      toast.error('Please complete all required fields before skipping.');
+      return;
+    }
+    if (currentStep === 3 && !validateStep3()) {
+      toast.error('Please complete all required fields before skipping.');
       return;
     }
     setCurrentStep(totalSteps);
@@ -310,6 +385,13 @@ const OnboardingFlow = () => {
       // Human-readable error messages
       if (error.response?.data) {
         const errorData = error.response.data;
+
+        // 1. Handle Global Error Message (New Backend Standard)
+        if (errorData.errormessage) {
+          toast.error(errorData.errormessage, { autoClose: 5000 });
+          // If we can't map to a specific field, we stop here to avoid confusing "Unknown error" toasts
+          // But we still let the code below run in case there are other fields (unlikely with the new handler)
+        }
         
         // Map error fields to their respective steps
         const fieldToStepMap = {
@@ -330,11 +412,22 @@ const OnboardingFlow = () => {
           'insurance_details': 2,
           'clean_level': 2,
           'about': 2,
+          'service_types': 2,
+          'minimum_hours': 2,
+          'service_areas': 2,
+          'availability': 2,
           
           // Step 3 fields (Verification/Needs)
-          'skills': 3,
-          'availability': 3,
-          'hourly_rate': 3,
+          'id_document_front': 3,
+          'id_document_back': 3,
+          'cv': 3,
+          'professional_ref_name': 3,
+          'professional_ref_email': 3,
+          'professional_ref_phone': 3,
+          'character_ref_name': 3,
+          'character_ref_email': 3,
+          'character_ref_phone': 3,
+          'dbs_certificate_number': 3,
           
           // Profile picture can be on any step
           'profile_picture': currentStep,
@@ -438,7 +531,7 @@ const OnboardingFlow = () => {
     <div className="onboarding-container">
       <div className="onboarding-header">
         <div className="header-content">
-          <Image src="/images/logo.png" alt="TidyLinker" width={40} height={40} className="logo"/>
+          <Image src="/images/logo.png" alt="Find Cleaner" width={40} height={40} className="logo"/>
           
           {/* This button is now correctly shown only AFTER step 1 */}
           {showHeaderSkipButton && (

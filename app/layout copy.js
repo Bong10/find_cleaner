@@ -34,7 +34,7 @@ export default function RootLayout({ children }) {
         />
         <meta
           name="description"
-          content="Superio - Job Borad React NextJS Template"
+          content="Find Cleaner - Cleaning Services & Jobs"
         />
         <meta name="ibthemes" content="ATFN" />
 

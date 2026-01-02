@@ -17,6 +17,8 @@ const Page = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -52,29 +54,79 @@ const Page = () => {
               <form onSubmit={onSubmit} noValidate>
                 <div className="form-group">
                   <label>New password</label>
-                  <input
-                    type="password"
-                    name="new_password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="New password"
-                    required
-                    disabled={loading}
-                    autoComplete="new-password"
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      name="new_password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="New password"
+                      required
+                      disabled={loading}
+                      autoComplete="new-password"
+                      style={{ paddingRight: '45px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#696969',
+                        fontSize: '18px'
+                      }}
+                      aria-label={showNewPassword ? "Hide password" : "Show password"}
+                    >
+                      <i className={showNewPassword ? "la la-eye-slash" : "la la-eye"}></i>
+                    </button>
+                  </div>
                 </div>
                 <div className="form-group">
                   <label>Confirm new password</label>
-                  <input
-                    type="password"
-                    name="re_new_password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm new password"
-                    required
-                    disabled={loading}
-                    autoComplete="new-password"
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="re_new_password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm new password"
+                      required
+                      disabled={loading}
+                      autoComplete="new-password"
+                      style={{ paddingRight: '45px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#696969',
+                        fontSize: '18px'
+                      }}
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      <i className={showConfirmPassword ? "la la-eye-slash" : "la la-eye"}></i>
+                    </button>
+                  </div>
                 </div>
                 <div className="form-group">
                   <button className="theme-btn btn-style-one" type="submit" disabled={loading}>

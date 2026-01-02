@@ -10,7 +10,7 @@ const index = () => {
   return (
     <>
       {/* <!-- Header Span --> */}
-      <span className="header-span"></span>
+      {/* <span className="header-span"></span> */}
 
       <LoginPopup />
       {/* End Login Popup Modal */}

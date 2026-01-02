@@ -53,14 +53,14 @@ const AdminSidebar = ({ isOpen, onClose, isMobile }) => {
         <div className="sidebar-logo">
           <Link href="/admin-dashboard/overview" onClick={handleLinkClick}>
             <Image
-              alt="TidyLinker"
+              alt="Find Cleaner"
               src="/images/logo.png"
               width={48}
               height={36}
               priority
             />
             <div className="logo-text">
-              <span className="brand-name">TidyLinker</span>
+              <span className="brand-name">Find Cleaner</span>
               <span className="subtitle">ADMIN PORTAL</span>
             </div>
           </Link>

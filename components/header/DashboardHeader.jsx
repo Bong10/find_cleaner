@@ -14,7 +14,9 @@ import ConfirmModal from "@/components/common/ConfirmModal";
 import {
   fetchNotificationsUnreadCount,
   selectNotificationsUnreadCount,
+  setNotificationsUnreadCount,
 } from "@/store/slices/notificationsSlice";
+import { useNotificationsSocket } from "@/utils/useNotificationsSocket";
 
 // resolve relative media paths against your API base (if backend returns "/media/..")
 const API_BASE =
@@ -36,6 +38,21 @@ const DashboardHeader = () => {
   const { isAuthenticated, user } = useSelector((s) => s.auth);
   const unreadNotifs = useSelector(selectNotificationsUnreadCount) || 0;
 
+  useNotificationsSocket({
+    enabled: !!isAuthenticated,
+    onEvent: (evt) => {
+      const maybeCount =
+        evt?.unread_count ??
+        evt?.unread_notifications_count ??
+        evt?.unread_notifications ??
+        evt?.notifications_unread_count ??
+        null;
+      if (maybeCount != null) {
+        dispatch(setNotificationsUnreadCount(maybeCount));
+      }
+    },
+  });
+
   useEffect(() => {
     const changeBackground = () => setNavbar(window.scrollY >= 0);
     changeBackground();
@@ -43,22 +60,23 @@ const DashboardHeader = () => {
     return () => window.removeEventListener("scroll", changeBackground);
   }, []);
 
-  // keep unread notification count fresh in header
+  // initial unread notification count
   useEffect(() => {
-    let timer;
     dispatch(fetchNotificationsUnreadCount());
-    timer = setInterval(() => dispatch(fetchNotificationsUnreadCount()), 15000);
-    return () => {
-      if (timer) clearInterval(timer);
-    };
   }, [dispatch]);
 
-  // avatar from backend (fallback to your current placeholder)
-  let avatarSrc = "/images/resource/company-6.png";
-  if (user?.profile_picture) {
-    const abs = resolveMediaUrl(user.profile_picture);
-    if (abs) avatarSrc = abs;
-  }
+  // avatar from backend
+  const hasProfilePic = !!user?.profile_picture;
+  const avatarSrc = hasProfilePic ? resolveMediaUrl(user.profile_picture) : null;
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+  };
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -129,13 +147,35 @@ const DashboardHeader = () => {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                <Image
-                  alt="avatar"
-                  className="thumb"
-                  src={avatarSrc}
-                  width={50}
-                  height={50}
-                />
+                {hasProfilePic ? (
+                  <Image
+                    alt="avatar"
+                    className="thumb"
+                    src={avatarSrc}
+                    width={50}
+                    height={50}
+                    style={{ objectFit: "cover", borderRadius: "50%" }}
+                  />
+                ) : (
+                  <div
+                    className="thumb"
+                    style={{
+                      width: 50,
+                      height: 50,
+                      borderRadius: "50%",
+                      backgroundColor: "#1967d2",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      fontSize: "18px",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {getInitials(user?.name)}
+                  </div>
+                )}
                 <span className="name">My Account</span>
               </a>
 

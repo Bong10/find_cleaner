@@ -206,17 +206,18 @@ export default function PostBoxForm() {
             </small>
           </div>
 
-          {/* Hourly rate */}
+          {/* Services (Specialisms) */}
           <div className="form-group col-lg-6 col-md-12">
-            <label>Hourly rate</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-              value={form.hourly_rate}
-              onChange={onBasicChange("hourly_rate")}
-              required
+            <label>Specialisms</label>
+            <Select
+              isMulti
+              options={serviceOptions}
+              isLoading={servicesLoading}
+              value={selectedServiceOptions}
+              onChange={(vals) => dispatch(setJobServices(vals.map((v) => v.value)))}
+              className="basic-multi-select"
+              classNamePrefix="select"
+              placeholder="Select one or more services"
             />
           </div>
 
@@ -235,21 +236,6 @@ export default function PostBoxForm() {
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* Services */}
-          <div className="form-group col-lg-12 col-md-12">
-            <label>Specialisms (Services)</label>
-            <Select
-              isMulti
-              options={serviceOptions}
-              isLoading={servicesLoading}
-              value={selectedServiceOptions}
-              onChange={(vals) => dispatch(setJobServices(vals.map((v) => v.value)))}
-              className="basic-multi-select"
-              classNamePrefix="select"
-              placeholder="Select one or more services"
-            />
           </div>
 
           {/* Description */}

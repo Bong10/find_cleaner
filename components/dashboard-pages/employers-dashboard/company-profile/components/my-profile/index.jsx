@@ -2,12 +2,13 @@
 
 import React from "react";
 import LogoCoverUploader from "./LogoCoverUploader";
+import FormInfoBox from "./FormInfoBox";
 
 const index = () => {
   return (
     <div className="widget-content">
       <LogoCoverUploader />
-      {/* End logo and cover photo components */}
+      <FormInfoBox />
     </div>
   );
 };

@@ -15,6 +15,9 @@ const extractErrMsg = (err) => {
   // RTK unwrap() often passes the payload, axios errors have response.data
   const data = err?.response?.data || err;
 
+  // 1. Check for backend "errormessage"
+  if (data?.errormessage) return data.errormessage;
+
   if (typeof data?.detail === "string") return data.detail;
   if (Array.isArray(data?.non_field_errors) && data.non_field_errors[0]) {
     return String(data.non_field_errors[0]);
@@ -32,6 +35,7 @@ const extractErrMsg = (err) => {
 const FormContent = ({ signupVariant = "modal", resetVariant = "modal" }) => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -140,7 +144,7 @@ const FormContent = ({ signupVariant = "modal", resetVariant = "modal" }) => {
 
   return (
     <div className="form-inner">
-      <h3>Login to TidyLinker</h3>
+      <h3>Login to Find Cleaner</h3>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Email</label>
@@ -158,16 +162,41 @@ const FormContent = ({ signupVariant = "modal", resetVariant = "modal" }) => {
 
         <div className="form-group">
           <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Password"
-            required
-            disabled={isLoading}
-            autoComplete="current-password"
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              required
+              disabled={isLoading}
+              autoComplete="current-password"
+              style={{ paddingRight: '45px' }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '5px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#696969',
+                fontSize: '18px'
+              }}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              <i className={showPassword ? "la la-eye-slash" : "la la-eye"}></i>
+            </button>
+          </div>
           <div className="field-outer" style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
             {resetVariant === 'route' ? (
               <Link href="/forgot-password" className="pwd">Forgot password?</Link>

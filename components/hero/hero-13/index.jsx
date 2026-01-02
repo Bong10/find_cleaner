@@ -274,7 +274,8 @@ export default function HeroSearch() {
         </div>
 
         <div className="post-job-text">
-          Prefer to post a job? <a href="/post-job">Click here</a>
+          {/* Prefer to post a job? <a href="/post-job">Click here</a> */}
+          Are you looking for a job? <a href="/jobs">Click here</a>
         </div>
       </div>
 
@@ -321,7 +322,7 @@ export default function HeroSearch() {
         .time-slot-btn.selected{background:var(--brand-color,#2aa389);color:#fff;border-color:var(--brand-color,#2aa389)}
 
         /* ===== Below-hero text ===== */
-        .post-job-text{text-align:center;margin-top:1.5rem;font-size:.9rem;color:rgba(255,255,255,.8)}
+        .post-job-text{text-align:center;margin-top:1.5rem;font-size:.9rem;color:rgba(255,255,255,0.9)}
         .post-job-text a{color:#fff;font-weight:500;text-decoration:underline;text-shadow:1px 1px 2px rgba(0,0,0,.5)}
 
         @keyframes heroFadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}

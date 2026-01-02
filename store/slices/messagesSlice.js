@@ -81,14 +81,18 @@ const messagesSlice = createSlice({
   reducers: {
     // Reducer for real-time updates (e.g., via WebSockets)
     addMessage: (state, action) => {
-        const message = action.payload;
-        const chatId = message.chat;
-        if (state.byChatId[chatId]) {
-            // Avoid adding duplicates
-            if (!state.byChatId[chatId].items.find(m => m.id === message.id)) {
-                state.byChatId[chatId].items.push(message);
-            }
-        }
+      const message = action.payload;
+      const chatId = message?.chat;
+      if (!chatId) return;
+
+      if (!state.byChatId[chatId]) {
+        state.byChatId[chatId] = { items: [], loading: false, error: null };
+      }
+
+      // Avoid adding duplicates
+      if (!state.byChatId[chatId].items.find((m) => String(m.id) === String(message.id))) {
+        state.byChatId[chatId].items.push(message);
+      }
     },
     // Optimistically mark all messages in a chat as read locally
     markAllMessagesReadLocal: (state, action) => {
@@ -99,7 +103,22 @@ const messagesSlice = createSlice({
           is_read: true,
         }));
       }
-    }
+    },
+    // Mark messages read up to a message id (used by WS read receipts)
+    markMessagesReadUpTo: (state, action) => {
+      const { chatId, lastReadMessageId } = action.payload || {};
+      if (!chatId || lastReadMessageId == null) return;
+      const bucket = state.byChatId[chatId];
+      if (!bucket?.items?.length) return;
+
+      const last = Number(lastReadMessageId);
+      bucket.items = bucket.items.map((m) => {
+        const mid = Number(m?.id);
+        if (!Number.isFinite(mid) || !Number.isFinite(last)) return m;
+        if (mid <= last) return { ...m, is_read: true };
+        return m;
+      });
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -120,9 +139,33 @@ const messagesSlice = createSlice({
       })
       .addCase(sendMessage.fulfilled, (state, action) => {
         const message = action.payload;
-        const chatId = message.chat;
-        if (state.byChatId[chatId]) {
-          state.byChatId[chatId].items.push(message);
+        console.log("[messagesSlice] sendMessage.fulfilled, payload:", message);
+        
+        // Handle both 'chat' as ID or as object with 'id'
+        const chatId = message?.chat?.id ?? message?.chat;
+        console.log("[messagesSlice] Resolved chatId:", chatId);
+        
+        if (!chatId) {
+          console.warn("[messagesSlice] No chatId found in message payload!");
+          return;
+        }
+        
+        // Ensure bucket exists
+        if (!state.byChatId[chatId]) {
+          console.log("[messagesSlice] Creating new bucket for chatId:", chatId);
+          state.byChatId[chatId] = { items: [], loading: false, error: null };
+        }
+        
+        // Avoid duplicates
+        if (!state.byChatId[chatId].items.find((m) => String(m.id) === String(message.id))) {
+          const normalizedMessage = {
+            ...message,
+            chat: chatId, // Normalize to just the ID
+          };
+          state.byChatId[chatId].items.push(normalizedMessage);
+          console.log("[messagesSlice] Message added, total items:", state.byChatId[chatId].items.length);
+        } else {
+          console.log("[messagesSlice] Duplicate message, skipping");
         }
       })
       .addCase(markMessageAsRead.fulfilled, (state, action) => {
@@ -146,7 +189,7 @@ const messagesSlice = createSlice({
   },
 });
 
-export const { addMessage, markAllMessagesReadLocal } = messagesSlice.actions;
+export const { addMessage, markAllMessagesReadLocal, markMessagesReadUpTo } = messagesSlice.actions;
 
 export const selectUnreadCount = (state) => state.messages.unreadCount;
 export const selectMessagesForChat = (chatId) => (state) =>

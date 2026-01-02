@@ -5,20 +5,20 @@ const Block1 = () => {
     {
       id: 1,
       icon: "/images/resource/work-1.png",
-      title: "Free Resume Assessments",
-      text: `Employers on average spend 31 seconds scanning resumes to identify potential matches.`,
+      title: "Create Your Profile",
+      text: `Sign up as a cleaner or client in minutes. Cleaners can showcase their skills, experience, and availability, while clients can post cleaning job requirements effortlessly.`,
     },
     {
       id: 2,
       icon: "/images/resource/work-2.png",
-      title: "Job Fit Scoring",
-      text: `Employers on average spend 31 seconds scanning resumes to identify potential matches.`,
+      title: "Connect & Match",
+      text: `Our smart matching system connects cleaners with suitable jobs based on location, skills, and preferences. Clients can review detailed profiles and make informed hiring decisions.`,
     },
     {
       id: 3,
       icon: "/images/resource/work-3.png",
-      title: "Help Every Step of the Way",
-      text: `Employers on average spend 31 seconds scanning resumes to identify potential matches.`,
+      title: "Work with Confidence",
+      text: `Book jobs securely with our verified payment system. Track work history, leave reviews, and build your reputation. We're here to support you every step of the way.`,
     },
   ];
   return (

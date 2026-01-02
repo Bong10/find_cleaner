@@ -63,13 +63,15 @@ const ActivationPage = ({ params }) => {
         }
       }
 
-      toast.success("Account activated! Welcome to TidyLinker!");
+      toast.success("Account activated! Welcome to Find Cleaner!");
     } catch (error) {
       setStatus("error");
 
       let errorMessage = "Activation failed. The link may be invalid or expired.";
 
-      if (error?.response?.status === 400) {
+      if (error?.response?.data?.errormessage) {
+        errorMessage = error.response.data.errormessage;
+      } else if (error?.response?.status === 400) {
         errorMessage =
           error.response.data?.error ||
           error.response.data?.message ||
@@ -127,7 +129,7 @@ const ActivationPage = ({ params }) => {
           <div className="logo-section">
             <Image
               src="/images/logo.png"
-              alt="TidyLinker Logo"
+              alt="Find Cleaner Logo"
               width={80}
               height={80}
               priority
@@ -196,8 +198,8 @@ const ActivationPage = ({ params }) => {
               <div className="help-text">
                 <p>
                   Need help? Contact our support team at{" "}
-                  <a href="mailto:support@tidylinker.com" className="support-link">
-                    support@tidylinker.com
+                  <a href="mailto:support@findcleaner.com" className="support-link">
+                    support@findcleaner.com
                   </a>
                 </p>
               </div>

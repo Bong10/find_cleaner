@@ -3,9 +3,9 @@
 
 const EmployerStep3 = ({ formData, errors, onUpdate }) => {
   const frequencies = [
-    { id: 'once', label: 'One-time', icon: '1️⃣', description: 'Single cleaning session' },
+    { id: 'one_time', label: 'One-time', icon: '1️⃣', description: 'Single cleaning session' },
     { id: 'weekly', label: 'Weekly', icon: '🗓️', description: 'Every week' },
-    { id: 'biweekly', label: 'Bi-weekly', icon: '📅', description: 'Every 2 weeks' },
+    { id: 'bi_weekly', label: 'Bi-weekly', icon: '📅', description: 'Every 2 weeks' },
     { id: 'monthly', label: 'Monthly', icon: '📆', description: 'Once a month' }
   ];
 
@@ -21,14 +21,17 @@ const EmployerStep3 = ({ formData, errors, onUpdate }) => {
     { id: 'bathroom', label: 'Bathroom Sanitization', icon: '🚿' },
     { id: 'floors', label: 'Floor Care', icon: '🏠' },
     { id: 'windows', label: 'Window Cleaning', icon: '🪟' },
-    { id: 'laundry', label: 'Laundry Service', icon: '👔' },
-    { id: 'organizing', label: 'Organization', icon: '📦' }
+    { id: 'not_listed', label: 'Not Listed', icon: '📝' }
   ];
 
   const togglePriority = (priorityId) => {
     const current = formData.cleaning_priorities || [];
     if (current.includes(priorityId)) {
       onUpdate('cleaning_priorities', current.filter(p => p !== priorityId));
+      // Clear custom priority if unchecking "Not Listed"
+      if (priorityId === 'not_listed') {
+        onUpdate('custom_priority', '');
+      }
     } else {
       onUpdate('cleaning_priorities', [...current, priorityId]);
     }
@@ -85,41 +88,6 @@ const EmployerStep3 = ({ formData, errors, onUpdate }) => {
           </div>
         </div>
 
-        {/* Budget Range */}
-        <div className="form-group">
-          <label className="form-label">
-            Budget Range (per cleaning)
-          </label>
-          <div className="budget-slider">
-            <div className="budget-inputs">
-              <div className="budget-input-group">
-                <span className="currency">£</span>
-                <input
-                  type="number"
-                  value={formData.budget_min || ''}
-                  onChange={(e) => onUpdate('budget_min', e.target.value)}
-                  className="budget-input"
-                  placeholder="50"
-                  min="20"
-                />
-              </div>
-              <span className="budget-separator">to</span>
-              <div className="budget-input-group">
-                <span className="currency">£</span>
-                <input
-                  type="number"
-                  value={formData.budget_max || ''}
-                  onChange={(e) => onUpdate('budget_max', e.target.value)}
-                  className="budget-input"
-                  placeholder="200"
-                  max="500"
-                />
-              </div>
-            </div>
-            <p className="budget-note">Average rate: £25-35/hour for 2-3 hours</p>
-          </div>
-        </div>
-
         {/* Cleaning Priorities */}
         <div className="form-group">
           <label className="form-label">
@@ -140,6 +108,23 @@ const EmployerStep3 = ({ formData, errors, onUpdate }) => {
               </div>
             ))}
           </div>
+          
+          {/* Custom Priority Input */}
+          {formData.cleaning_priorities?.includes('not_listed') && (
+            <div className="custom-priority-container">
+              <div className="custom-input-wrapper">
+                <span className="input-icon">📝</span>
+                <input
+                  type="text"
+                  value={formData.custom_priority || ''}
+                  onChange={(e) => onUpdate('custom_priority', e.target.value)}
+                  className="custom-priority-field"
+                  placeholder="What else do you need help with? (e.g. Garage cleaning)"
+                  autoFocus
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Special Requirements */}
@@ -159,41 +144,30 @@ const EmployerStep3 = ({ formData, errors, onUpdate }) => {
         {/* Supplies */}
         <div className="form-group">
           <label className="form-label">
-            Cleaning Supplies
+            Do you provide cleaning supplies?
           </label>
           <div className="supplies-options">
             <label className="radio-label">
               <input
                 type="radio"
                 name="supplies"
-                checked={formData.supplies_provided === 'employer'}
-                onChange={() => onUpdate('supplies_provided', 'employer')}
+                checked={formData.supplies_provided === 'yes'}
+                onChange={() => onUpdate('supplies_provided', 'yes')}
                 className="radio-input"
               />
               <span className="radio-custom"></span>
-              <span className="radio-text">I'll provide cleaning supplies</span>
+              <span className="radio-text">Yes</span>
             </label>
             <label className="radio-label">
               <input
                 type="radio"
                 name="supplies"
-                checked={formData.supplies_provided === 'cleaner'}
-                onChange={() => onUpdate('supplies_provided', 'cleaner')}
+                checked={formData.supplies_provided === 'no'}
+                onChange={() => onUpdate('supplies_provided', 'no')}
                 className="radio-input"
               />
               <span className="radio-custom"></span>
-              <span className="radio-text">Cleaner brings supplies (may cost extra)</span>
-            </label>
-            <label className="radio-label">
-              <input
-                type="radio"
-                name="supplies"
-                checked={formData.supplies_provided === 'flexible'}
-                onChange={() => onUpdate('supplies_provided', 'flexible')}
-                className="radio-input"
-              />
-              <span className="radio-custom"></span>
-              <span className="radio-text">Open to either option</span>
+              <span className="radio-text">No</span>
             </label>
           </div>
         </div>
@@ -428,6 +402,50 @@ const EmployerStep3 = ({ formData, errors, onUpdate }) => {
           align-items: center;
           justify-content: center;
           font-size: 12px;
+        }
+
+        .custom-priority-container {
+          margin-top: 16px;
+          animation: slideDown 0.3s ease-out;
+        }
+        
+        .custom-input-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .input-icon {
+          position: absolute;
+          left: 16px;
+          font-size: 20px;
+          pointer-events: none;
+        }
+
+        .custom-priority-field {
+          width: 100%;
+          padding: 16px 16px 16px 50px;
+          border: 2px solid #4b9b97;
+          border-radius: 12px;
+          font-size: 16px;
+          background: #f0f9f7;
+          outline: none;
+          transition: all 0.3s ease;
+          color: #1a1a1a;
+        }
+
+        .custom-priority-field::placeholder {
+          color: #6b7280;
+        }
+
+        .custom-priority-field:focus {
+          background: white;
+          box-shadow: 0 4px 12px rgba(75, 155, 151, 0.15);
+        }
+
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .form-textarea {

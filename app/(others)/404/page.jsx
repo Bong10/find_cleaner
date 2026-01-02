@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const metadata = {
-  title: "404 Error || TidyLinker - Page Not Found",
-description: "Oops! This page isn’t available. Go back to TidyLinker to discover trusted cleaners and cleaning job opportunities in your area."
+  title: "404 Error || Find Cleaner - Page Not Found",
+description: "Oops! This page isn’t available. Go back to Find Cleaner to discover trusted cleaners and cleaning job opportunities in your area."
 };
 
 const index = () => {

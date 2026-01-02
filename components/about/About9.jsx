@@ -20,7 +20,13 @@ const About9 = () => {
       id: 3,
       icon: "flaticon-checked",
       title: "Satisfaction Guaranteed",
-      text: `If you’re not happy, we’ll make it right or help you find another professional.`,
+      text: `If you're not happy, we'll make it right or help you find another professional.`,
+    },
+    {
+      id: 4,
+      icon: "flaticon-chat",
+      title: "AI-Powered Chat Assistant",
+      text: `Get instant help finding the perfect cleaner with our intelligent chatbot available 24/7.`,
     },
   ];
 

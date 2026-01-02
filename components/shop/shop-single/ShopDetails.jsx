@@ -42,9 +42,8 @@ const ShopSingleDyanmic = ({ id }) => {
 
   return (
     <>
-      <span className="header-span"></span>
-
       {/* <!-- Header Span --> */}
+      {/* <span className="header-span"></span> */}
 
       <LoginPopup />
       {/* End Login Popup Modal */}

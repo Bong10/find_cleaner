@@ -17,7 +17,7 @@ export const fetchBookings = createAsyncThunk(
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error("Fetch bookings error:", error);
-      return rejectWithValue(error.response?.data?.detail || "Failed to fetch bookings");
+      return rejectWithValue(error.response?.data?.errormessage || error.response?.data?.detail || "Failed to fetch bookings");
     }
   }
 );
@@ -42,7 +42,7 @@ export const createBooking = createAsyncThunk(
       
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.detail || "Booking failed");
+      return rejectWithValue(error.response?.data?.errormessage || error.response?.data?.detail || "Booking failed");
     }
   }
 );

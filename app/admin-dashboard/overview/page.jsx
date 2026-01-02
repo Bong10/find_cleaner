@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 
 export const metadata = {
-  title: "Admin Overview | TidyLinker",
+  title: "Admin Overview | Find Cleaner",
   description: "Admin dashboard overview and statistics",
   robots: "noindex, nofollow",
 };

@@ -3,8 +3,8 @@ import dynamic from "next/dynamic";
 import Terms from "@/components/pages-menu/terms";
 
 export const metadata = {
-  title: "Terms || TidyLinker - User Agreement & Platform Policies",
-description: "Review the official TidyLinker terms outlining usage rules, privacy standards, and guidelines for hiring and working through our cleaning job platform."
+  title: "Terms || Find Cleaner - User Agreement & Platform Policies",
+description: "Review the official Find Cleaner terms outlining usage rules, privacy standards, and guidelines for hiring and working through our cleaning job platform."
   
 }
 

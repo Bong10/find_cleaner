@@ -11,6 +11,12 @@ const FooterNavContent = () => {
             <Link href="/about">About Us</Link>
           </li>
           <li>
+            <Link href="/community-impact">Community Impact</Link>
+          </li>
+          <li>
+            <Link href="/support-programmes">Support Programmes</Link>
+          </li>
+          <li>
             <Link href="/help-center">Help Center</Link>
           </li>
           <li>

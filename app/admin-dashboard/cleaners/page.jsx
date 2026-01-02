@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 
 export const metadata = {
-  title: "Cleaners Management | TidyLinker Admin",
+  title: "Cleaners Management | Find Cleaner Admin",
   description: "Manage all registered cleaners",
   robots: "noindex, nofollow",
 };

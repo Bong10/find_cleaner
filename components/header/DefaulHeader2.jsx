@@ -107,7 +107,7 @@ const DefaulHeader2 = () => {
                   }}
                 src="/images/logo.png"
                 alt="brand"
-              /> <span className="logo-text">TidyLinker</span>
+              /> <span className="logo-text">Find Cleaner</span>
             </Link>
           </div>
         </div>
@@ -428,6 +428,17 @@ const DefaulHeader2 = () => {
         
         .header-span {
            display: none !important;
+        }
+      `}</style>
+
+      {/* Adjust spacer only when header becomes fixed */}
+      <style jsx>{`
+        :global(header.main-header + .header-span) {
+          display: block !important;
+          height: 0; /* no gap by default */
+        }
+        :global(header.main-header.fixed-header + .header-span) {
+          height: 70px; /* add offset only when fixed */
         }
       `}</style>
     </header>

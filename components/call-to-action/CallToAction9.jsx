@@ -12,9 +12,8 @@ const CallToAction9 = () => {
             <div className="sec-title light text-center">
               <h2>Make Recruiting Your Competitive Advantage</h2>
               <div className="text">
-                Superio offers a way to completely optimize your entire
-                recruiting process. Find better candidates, conduct more focused
-                interviews, and make data-driven hiring decisions.
+                Find Cleaner offers a way to simplify hiring cleaning services.
+                Find reliable cleaners, schedule jobs quickly, and manage bookings easily.
               </div>
             </div>
             {/* End sec-title */}

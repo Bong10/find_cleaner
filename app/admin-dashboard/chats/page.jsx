@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 
 export const metadata = {
-  title: "Chat Moderation | TidyLinker Admin",
+  title: "Chat Moderation | Find Cleaner Admin",
   description: "Monitor and manage user conversations",
   robots: "noindex, nofollow",
 };

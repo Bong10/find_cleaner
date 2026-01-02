@@ -8,6 +8,7 @@ import {
   selectCurrentChatId,
   setChatUnread,
 } from "@/store/slices/chatsSlice";
+import InitialsAvatar from "../../../../common/InitialsAvatar";
 import Image from "next/image";
 import { markAllMessagesReadLocal } from "@/store/slices/messagesSlice";
 
@@ -161,9 +162,8 @@ const ContactList = () => {
               const participant = getParticipant(chat);
               const isActive = chat.id === currentChatId;
 
-              const name = participant?.company_name || participant?.user?.name || "TidyLinker Employer";
-              const avatar =
-                participant?.user?.profile_picture || "/images/resource/employer-1.png";
+              const name = participant?.company_name || participant?.user?.name || "Find Cleaner Employer";
+              const avatar = participant?.user?.profile_picture || null;
               const preview = getLastMessagePreview(chat);
               const time = getLastMessageTime(chat);
               const unread = deriveUnreadForChat(chat);
@@ -180,7 +180,11 @@ const ContactList = () => {
                   }}
                 >
                   <div className="contact-avatar">
-                    <Image fill src={avatar} alt={name} style={{ objectFit: "cover" }} sizes="50px" />
+                    <InitialsAvatar
+                      name={name}
+                      src={avatar}
+                      size={50}
+                    />
                   </div>
 
                   <div className="contact-info">

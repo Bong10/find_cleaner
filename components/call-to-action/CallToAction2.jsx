@@ -8,18 +8,18 @@ const CallToAction2 = () => {
     >
       <div className="auto-container" data-aos="fade-up">
         <div className="sec-title light text-center">
-          <h2>Your Dream Jobs Are Waiting</h2>
+          <h2>Your Next Cleaning Job Starts Here</h2>
           <div className="text">
-            Over 1 million interactions, 50,000 success stories Make yours now.
+            Discover verified clients, secure bookings, and build your cleaning career with confidence.
           </div>
         </div>
 
         <div className="btn-box">
-          <Link href="/job-list-v6" className="theme-btn btn-style-three">
-            Search Job
+          <Link href="/jobs" className="theme-btn btn-style-three">
+            Search Jobs
           </Link>
           <Link href="/register" className="theme-btn btn-style-two">
-            Apply Job Now
+            Apply Now
           </Link>
         </div>
       </div>

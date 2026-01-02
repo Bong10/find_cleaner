@@ -23,6 +23,7 @@ const FormContent = ({ role = 'cleaner', onSuccess = 'modal' }) => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const bs = useMemo(
     () => (typeof window !== 'undefined' ? window.bootstrap : null),
@@ -49,6 +50,7 @@ const FormContent = ({ role = 'cleaner', onSuccess = 'modal' }) => {
 
   const firstError = (obj) => {
     if (!obj) return '';
+    if (obj.errormessage) return obj.errormessage;
     if (Array.isArray(obj)) return obj[0];
     if (typeof obj === 'object') return firstError(obj[Object.keys(obj)[0]]);
     return String(obj);
@@ -97,17 +99,42 @@ const FormContent = ({ role = 'cleaner', onSuccess = 'modal' }) => {
 
       <div className="form-group">
         <label>Password</label>
-        <input
-          id="password-field"
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="new-password"
-          disabled={loading}
-        />
+        <div style={{ position: 'relative' }}>
+          <input
+            id="password-field"
+            type={showPassword ? "text" : "password"}
+            name="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+            disabled={loading}
+            style={{ paddingRight: '45px' }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: 'absolute',
+              right: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '5px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#696969',
+              fontSize: '18px'
+            }}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            <i className={showPassword ? "la la-eye-slash" : "la la-eye"}></i>
+          </button>
+        </div>
       </div>
 
       <div className="form-group">

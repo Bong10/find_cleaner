@@ -3,8 +3,8 @@ import DashboadHome from "@/components/dashboard-pages/candidates-dashboard/dash
 import DashboardGuard from "@/components/auth/DashboardGuard";
 
 export const metadata = {
- title: "Cleaner Dashboard || TidyLinker - Your Cleaning Jobs Hub",
-description: "Manage your cleaning jobs, profile, and applications all in one place. TidyLinker helps cleaners stay organized and connected with trusted employers."
+ title: "Cleaner Dashboard || Find Cleaner - Your Cleaning Jobs Hub",
+description: "Manage your cleaning jobs, profile, and applications all in one place. Find Cleaner helps cleaners stay organized and connected with trusted employers."
 };
 
 const index = () => {

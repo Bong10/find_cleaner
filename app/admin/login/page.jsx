@@ -2,8 +2,8 @@ import dynamic from "next/dynamic";
 import AdminLogin from "@/components/pages-menu/admin-login";
 
 export const metadata = {
-  title: "Admin Login || TidyLinker - Admin Portal",
-  description: "Secure admin login for TidyLinker management portal. Restricted access for authorized personnel only.",
+  title: "Admin Login || Find Cleaner - Admin Portal",
+  description: "Secure admin login for Find Cleaner management portal. Restricted access for authorized personnel only.",
   robots: "noindex, nofollow", // Don't index admin login page
 };
 

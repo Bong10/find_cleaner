@@ -12,7 +12,7 @@ import CleanerBookingManagement from "./CleanerBookingManagement";
 const Index = () => {
   return (
     <div className="page-wrapper dashboard">
-      <span className="header-span"></span>
+      {/* <span className="header-span"></span> */}
       {/* <!-- Header Span for hight --> */}
 
       <LoginPopup />

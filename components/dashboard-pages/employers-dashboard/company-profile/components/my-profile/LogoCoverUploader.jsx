@@ -44,7 +44,7 @@ const resolveMediaUrl = (path) => {
 
 export default function LogoCoverUploader() {
   const dispatch = useDispatch();
-  const { uploadingLogo, uploadingCover, logo, cover_image, status } =
+  const { uploadingLogo, uploadingCover, logo, cover_image, status, business_name, first_name, last_name } =
     useSelector(selectEmployerProfile);
 
   // Ensure profile is loaded on hard reload (if parent didn't prefetch)
@@ -58,6 +58,21 @@ export default function LogoCoverUploader() {
   // temp previews
   const [tempLogoUrl, setTempLogoUrl] = useState("");
   const [tempCoverUrl, setTempCoverUrl] = useState("");
+
+  // Helper to get initials
+  const getInitials = () => {
+    if (business_name) {
+      const parts = business_name.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return parts[0]?.substring(0, 2).toUpperCase() || "CO";
+    }
+    if (first_name || last_name) {
+      return ((first_name?.[0] || "") + (last_name?.[0] || "")).toUpperCase();
+    }
+    return "NA";
+  };
 
   useEffect(() => {
     if (!uploadingLogo) setTempLogoUrl("");
@@ -146,11 +161,14 @@ export default function LogoCoverUploader() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 12,
-                color: "#999",
+                fontSize: 24,
+                fontWeight: "bold",
+                color: "#fff",
+                backgroundColor: "#1967d2", // Primary blue color
+                textTransform: "uppercase",
               }}
             >
-              No logo
+              {getInitials()}
             </div>
           )}
         </div>

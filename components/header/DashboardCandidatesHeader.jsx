@@ -13,7 +13,10 @@ import ConfirmModal from "@/components/common/ConfirmModal";
 import {
     fetchNotificationsUnreadCount,
     selectNotificationsUnreadCount,
+    setNotificationsUnreadCount,
 } from "@/store/slices/notificationsSlice";
+import { useNotificationsSocket } from "@/utils/useNotificationsSocket";
+import InitialsAvatar from "../common/InitialsAvatar";
 
 // resolve relative media paths against your API base (if backend returns "/media/..")
 const API_BASE =
@@ -35,6 +38,21 @@ const DashboardCandidatesHeader = () => {
     const { isAuthenticated, user } = useSelector((s) => s.auth);
     const unreadNotifs = useSelector(selectNotificationsUnreadCount) || 0;
 
+    useNotificationsSocket({
+        enabled: !!isAuthenticated,
+        onEvent: (evt) => {
+            const maybeCount =
+                evt?.unread_count ??
+                evt?.unread_notifications_count ??
+                evt?.unread_notifications ??
+                evt?.notifications_unread_count ??
+                null;
+            if (maybeCount != null) {
+                dispatch(setNotificationsUnreadCount(maybeCount));
+            }
+        },
+    });
+
     useEffect(() => {
         const changeBackground = () => setNavbar(window.scrollY >= 0);
         changeBackground();
@@ -42,20 +60,14 @@ const DashboardCandidatesHeader = () => {
         return () => window.removeEventListener("scroll", changeBackground);
     }, []);
 
-    // keep unread notification count fresh in header
+    // initial unread notification count
     useEffect(() => {
-        let timer;
         dispatch(fetchNotificationsUnreadCount());
-        timer = setInterval(() => dispatch(fetchNotificationsUnreadCount()), 15000);
-        return () => { if (timer) clearInterval(timer); };
     }, [dispatch]);
 
-    // avatar from backend (fallback to candidate placeholder)
-    let avatarSrc = "/images/resource/candidate-1.png";
-    if (user?.profile_picture) {
-        const abs = resolveMediaUrl(user.profile_picture);
-        if (abs) avatarSrc = abs;
-    }
+    // avatar from backend or generate initials
+    const avatarSrc = user?.profile_picture ? resolveMediaUrl(user.profile_picture) : null;
+    const userName = user?.name || user?.first_name || user?.email?.split('@')[0] || "User";
 
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -136,13 +148,11 @@ const DashboardCandidatesHeader = () => {
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
                             >
-                                <Image
-                                    alt="avatar"
-                                    className="thumb"
+                                <InitialsAvatar
+                                    name={userName}
                                     src={avatarSrc}
-                                    width={50}
-                                    height={50}
-                                    style={{ objectFit: 'cover', borderRadius: '50%' }}
+                                    size={50}
+                                    className="thumb"
                                 />
                                 <span className="name">My Account</span>
                             </a>
@@ -150,7 +160,7 @@ const DashboardCandidatesHeader = () => {
                             <ul className="dropdown-menu">
                                 {candidatesMenuData.map((item) => {
                                     const isActive = isActiveLink(item.routePath, pathname);
-                                    const isLogout = item.name === "Logout" || item.id === 10;
+                                    const isLogout = item.name === "Logout";
 
                                     return (
                                         <li

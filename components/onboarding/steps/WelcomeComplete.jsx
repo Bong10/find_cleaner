@@ -46,7 +46,7 @@ const WelcomeComplete = ({ formData, userRole }) => {
           </svg>
         </div>
         
-        <h1>Welcome to TidyLinker, {formData.name || 'Friend'}!</h1>
+        <h1>Welcome to Find Cleaner, {formData.name || 'Friend'}!</h1>
         <p className="welcome-subtitle">
           Your profile is all set up. Click below to save your profile and go to your dashboard.
         </p>

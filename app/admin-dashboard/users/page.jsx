@@ -5,7 +5,7 @@ const UserManagement = dynamic(() => import("@/components/dashboard-pages/admin-
 });
 
 export const metadata = {
-  title: "User Management | TidyLinker Admin",
+  title: "User Management | Find Cleaner Admin",
   description: "Manage all platform users",
   robots: "noindex"
 };

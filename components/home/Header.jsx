@@ -117,7 +117,7 @@ const Header = () => {
                   }}
                 src="/images/logo.png"
                 alt="brand"
-              /> <span className="logo-text">TidyLinker</span>
+              /> <span className="logo-text">Find Cleaner</span>
             </Link>
           </div>
         </div>

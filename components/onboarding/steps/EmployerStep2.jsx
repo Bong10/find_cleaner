@@ -1,26 +1,62 @@
 // components/onboarding/steps/EmployerStep2.jsx
 "use client";
 
+import { useState } from 'react';
+import { validatePostcode, getAllWorkingZones, isPointInZones } from '@/services/locationService';
+import { toast } from 'react-toastify';
+import ZoneMapPreview from '@/components/dashboard-pages/candidates-dashboard/services/components/ZoneMapPreview';
+
 const EmployerStep2 = ({ formData, errors, onUpdate }) => {
+  const [checkingLocation, setCheckingLocation] = useState(false);
+  const [zoneError, setZoneError] = useState(null);
+  const [workingZones, setWorkingZones] = useState([]);
+
+  const handlePostcodeCheck = async () => {
+    const postcode = formData.postcode;
+    if (!postcode) return;
+
+    setCheckingLocation(true);
+    setZoneError(null);
+
+    try {
+      // 1. Validate Postcode
+      const location = await validatePostcode(postcode);
+      if (!location.isValid) {
+        setZoneError("Invalid postcode. Please check and try again.");
+        setCheckingLocation(false);
+        return;
+      }
+
+      // 2. Check Zones
+      const zones = await getAllWorkingZones();
+      setWorkingZones(zones);
+      const inZone = isPointInZones(location.lat, location.lng, zones);
+
+      if (!inZone) {
+        setZoneError("Sorry, we don't cover this area yet.");
+        onUpdate('city', '');
+        onUpdate('county', '');
+      } else {
+        // 3. Auto-fill
+        onUpdate('city', location.city || '');
+        onUpdate('county', location.county || '');
+        onUpdate('postcode', location.formattedPostcode);
+        toast.success("Location verified! We cover your area.");
+      }
+    } catch (err) {
+      console.error(err);
+      setZoneError("Unable to verify location. Please try again.");
+    } finally {
+      setCheckingLocation(false);
+    }
+  };
+
   const propertyTypes = [
     { id: 'apartment', label: 'Apartment', icon: '🏢' },
     { id: 'house', label: 'House', icon: '🏠' },
     { id: 'office', label: 'Office', icon: '💼' },
     { id: 'commercial', label: 'Commercial', icon: '🏪' }
   ];
-
-  const propertySizes = [
-    { id: 'studio', label: 'Studio/1BR', sqft: '< 800 sqft' },
-    { id: 'small', label: '2BR', sqft: '800-1200 sqft' },
-    { id: 'medium', label: '3BR', sqft: '1200-2000 sqft' },
-    { id: 'large', label: '4BR+', sqft: '> 2000 sqft' },
-    { id: 'commercial_small', label: 'Small Office', sqft: '< 2000 sqft' },
-    { id: 'commercial_large', label: 'Large Office', sqft: '> 2000 sqft' }
-  ];
-
-  const displayedSizes = formData.property_type === 'office' || formData.property_type === 'commercial'
-    ? propertySizes.filter(s => s.id.includes('commercial'))
-    : propertySizes.filter(s => !s.id.includes('commercial'));
 
   return (
     <div className="step-container">
@@ -30,19 +66,99 @@ const EmployerStep2 = ({ formData, errors, onUpdate }) => {
       </div>
 
       <div className="form-content">
-        {/* Service Address */}
+        {/* Postcode & Zone Check */}
         <div className="form-group">
           <label className="form-label">
-            Service Address <span className="required">*</span>
+            Postcode <span className="required">*</span>
           </label>
-          <input
-            type="text"
-            value={formData.location || ''}
-            onChange={(e) => onUpdate('location', e.target.value)}
-            className={`form-input ${errors.location ? 'error' : ''}`}
-            placeholder="123 Main St, City, State ZIP"
-          />
-          {errors.location && <span className="error-message">{errors.location}</span>}
+          <div className="input-group" style={{ display: 'flex', gap: '10px' }}>
+            <input
+              type="text"
+              value={formData.postcode || ''}
+              onChange={(e) => onUpdate('postcode', e.target.value.toUpperCase())}
+              onBlur={handlePostcodeCheck}
+              className={`form-input ${errors.postcode ? 'error' : ''} ${zoneError ? 'error-field' : ''}`}
+              placeholder="e.g., SW1A 1AA"
+              maxLength={8}
+            />
+            <button 
+              type="button" 
+              className="theme-btn btn-style-one small"
+              onClick={handlePostcodeCheck}
+              disabled={checkingLocation}
+            >
+              {checkingLocation ? 'Checking...' : 'Check'}
+            </button>
+          </div>
+          {errors.postcode && <span className="error-message">{errors.postcode}</span>}
+          {zoneError && (
+            <div className="error-message" style={{ marginTop: '5px', color: '#dc3545' }}>
+              {zoneError}
+              <div style={{ marginTop: '10px' }}>
+                <p style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>Check our service zones:</p>
+                <ZoneMapPreview zones={workingZones} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Service Address */}
+        <div className="address-row">
+          <div className="form-group">
+            <label className="form-label">
+              Address Line 1 <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.address_line1 || ''}
+              onChange={(e) => onUpdate('address_line1', e.target.value)}
+              className={`form-input ${errors.address_line1 ? 'error' : ''}`}
+              placeholder="House number and street name"
+            />
+            {errors.address_line1 && <span className="error-message">{errors.address_line1}</span>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">
+              Address Line 2
+            </label>
+            <input
+              type="text"
+              value={formData.address_line2 || ''}
+              onChange={(e) => onUpdate('address_line2', e.target.value)}
+              className="form-input"
+              placeholder="Apartment, suite, unit, etc. (optional)"
+            />
+          </div>
+        </div>
+
+        <div className="address-row">
+          <div className="form-group">
+            <label className="form-label">
+              Town/City <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.city || ''}
+              onChange={(e) => onUpdate('city', e.target.value)}
+              className={`form-input ${errors.city ? 'error' : ''}`}
+              placeholder="e.g. London"
+            />
+            {errors.city && <span className="error-message">{errors.city}</span>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">
+              County
+            </label>
+            <input
+              type="text"
+              value={formData.county || ''}
+              onChange={(e) => onUpdate('county', e.target.value)}
+              className="form-input"
+              placeholder="e.g. Greater London"
+            />
+          </div>
         </div>
 
         {/* Property Type */}
@@ -65,54 +181,105 @@ const EmployerStep2 = ({ formData, errors, onUpdate }) => {
           {errors.property_type && <span className="error-message">{errors.property_type}</span>}
         </div>
 
-        {/* Property Size */}
-        <div className="form-group">
-          <label className="form-label">
-            Property Size
-          </label>
-          <div className="size-options">
-            {displayedSizes.map(size => (
-              <button
-                key={size.id}
-                type="button"
-                onClick={() => onUpdate('property_size', size.id)}
-                className={`size-btn ${formData.property_size === size.id ? 'active' : ''}`}
-              >
-                <span className="size-label">{size.label}</span>
-                <span className="size-sqft">{size.sqft}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Number of Rooms (for homes) */}
-        {(formData.property_type === 'house' || formData.property_type === 'apartment') && (
+        {/* Room Details */}
+        {formData.property_type && (
           <div className="room-details">
-            <label className="form-label">Room Details</label>
             <div className="room-grid">
-              <div className="room-item">
-                <label>Bedrooms</label>
-                <input
-                  type="number"
-                  value={formData.bedrooms || ''}
-                  onChange={(e) => onUpdate('bedrooms', e.target.value)}
-                  className="room-input"
-                  min="0"
-                  max="10"
-                />
-              </div>
-              <div className="room-item">
-                <label>Bathrooms</label>
-                <input
-                  type="number"
-                  value={formData.bathrooms || ''}
-                  onChange={(e) => onUpdate('bathrooms', e.target.value)}
-                  className="room-input"
-                  min="0"
-                  max="10"
-                  step="0.5"
-                />
-              </div>
+              {/* Fields for House/Apartment */}
+              {(formData.property_type === 'house' || formData.property_type === 'apartment') && (
+                <>
+                  <div className="room-item">
+                    <label className="form-label">Bedrooms</label>
+                    <input
+                      type="number"
+                      value={formData.bedrooms || ''}
+                      onChange={(e) => onUpdate('bedrooms', parseInt(e.target.value) || '')}
+                      className="room-input"
+                      min="0"
+                      step="1"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="room-item">
+                    <label className="form-label">Bathrooms</label>
+                    <input
+                      type="number"
+                      value={formData.bathrooms || ''}
+                      onChange={(e) => onUpdate('bathrooms', parseInt(e.target.value) || '')}
+                      className="room-input"
+                      min="0"
+                      step="1"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="room-item">
+                    <label className="form-label">Toilets</label>
+                    <input
+                      type="number"
+                      value={formData.toilets || ''}
+                      onChange={(e) => onUpdate('toilets', parseInt(e.target.value) || '')}
+                      className="room-input"
+                      min="0"
+                      step="1"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="room-item">
+                    <label className="form-label">Kitchens</label>
+                    <input
+                      type="number"
+                      value={formData.kitchens || ''}
+                      onChange={(e) => onUpdate('kitchens', parseInt(e.target.value) || '')}
+                      className="room-input"
+                      min="0"
+                      step="1"
+                      placeholder="0"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Fields for Office/Commercial */}
+              {(formData.property_type === 'office' || formData.property_type === 'commercial') && (
+                <>
+                  <div className="room-item">
+                    <label className="form-label">Rooms</label>
+                    <input
+                      type="number"
+                      value={formData.rooms || ''}
+                      onChange={(e) => onUpdate('rooms', parseInt(e.target.value) || '')}
+                      className="room-input"
+                      min="0"
+                      step="1"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="room-item">
+                    <label className="form-label">Toilets</label>
+                    <input
+                      type="number"
+                      value={formData.toilets || ''}
+                      onChange={(e) => onUpdate('toilets', parseInt(e.target.value) || '')}
+                      className="room-input"
+                      min="0"
+                      step="1"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="room-item">
+                    <label className="form-label">Kitchens</label>
+                    <input
+                      type="number"
+                      value={formData.kitchens || ''}
+                      onChange={(e) => onUpdate('kitchens', parseInt(e.target.value) || '')}
+                      className="room-input"
+                      min="0"
+                      step="1"
+                      placeholder="0"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -204,6 +371,17 @@ const EmployerStep2 = ({ formData, errors, onUpdate }) => {
         .form-group {
           display: flex;
           flex-direction: column;
+        }
+
+        .address-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+        @media (max-width: 640px) {
+          .address-row {
+            grid-template-columns: 1fr;
+          }
         }
 
         .form-label {

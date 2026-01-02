@@ -62,7 +62,7 @@ const DashboardCandidatesSidebar = () => {
           <ul className="navigation">
             {candidatesuData.map((item) => {
               const isActive = isActiveLink(item.routePath, pathname);
-              const isLogout = item.name === "Logout" || item.id === 11;
+              const isLogout = item.name === "Logout";
 
               return (
                 <li

@@ -42,6 +42,12 @@ export const submitJob = createAsyncThunk(
       return data;
     } catch (err) {
       const data = err?.response?.data;
+
+      if (data?.errormessage) {
+        toast.error(data.errormessage);
+        return rejectWithValue(data);
+      }
+
       if (data && typeof data === "object") {
         Object.entries(data).forEach(([field, msgs]) => {
           const msg = Array.isArray(msgs) ? msgs[0] : String(msgs);
@@ -65,7 +71,7 @@ export const fetchJobById = createAsyncThunk(
       return response;
     } catch (error) {
       return rejectWithValue({ 
-        error: error?.response?.data?.detail || error?.message || "Failed to fetch job" 
+        error: error?.response?.data?.errormessage || error?.response?.data?.detail || error?.message || "Failed to fetch job" 
       });
     }
   }
@@ -80,7 +86,7 @@ export const fetchJobEmployer = createAsyncThunk(
       return response.data;
     } catch (error) {
       return rejectWithValue({ 
-        error: error?.response?.data?.detail || error?.message || "Failed to fetch employer" 
+        error: error?.response?.data?.errormessage || error?.response?.data?.detail || error?.message || "Failed to fetch employer" 
       });
     }
   }
@@ -115,7 +121,7 @@ export const fetchMyApplications = createAsyncThunk(
       return applications;
     } catch (error) {
       return rejectWithValue({ 
-        error: error?.response?.data?.detail || error?.message || "Failed to fetch applications" 
+        error: error?.response?.data?.errormessage || error?.response?.data?.detail || error?.message || "Failed to fetch applications" 
       });
     }
   }

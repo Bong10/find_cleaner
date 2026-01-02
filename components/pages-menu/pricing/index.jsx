@@ -1,7 +1,7 @@
 import Breadcrumb from "../../common/Breadcrumb";
 import LoginPopup from "../../common/form/login/LoginPopup";
 import FooterDefault from "../../footer/common-footer";
-import DefaulHeader from "../../header/DefaulHeader";
+import DefaulHeader from "../../header/DefaulHeader2";
 import MobileMenu from "../../header/MobileMenu";
 import Pricing from "../../pricing/Pricing";
 
@@ -9,7 +9,7 @@ const index = () => {
   return (
     <>
       {/* <!-- Header Span --> */}
-      <span className="header-span"></span>
+      {/* <span className="header-span"></span> */}
 
       <LoginPopup />
       {/* End Login Popup Modal */}
@@ -26,9 +26,9 @@ const index = () => {
       <section className="pricing-section">
         <div className="auto-container">
           <div className="sec-title text-center">
-            <h2>Pricing Packages</h2>
+            <h2>Choose Your Plan</h2>
             <div className="text">
-              Lorem ipsum dolor sit amet elit, sed do eiusmod tempor.
+              Select the perfect plan for your job search journey. Upgrade anytime to unlock more features.
             </div>
           </div>
           {/* End title */}

@@ -8,6 +8,7 @@ import { bookCleaner, createAndBookCleaner } from "@/store/slices/bookingSlice";
 import { fetchEmployerJobs } from "@/store/slices/employerJobsSlice";
 import { selectJobForm, updateJobField, setJobServices } from "@/store/slices/jobsSlice";
 import { fetchServices } from "@/store/slices/servicesSlice";
+import { toast } from "react-toastify";
 
 const BookCleanerModal = ({ show, onHide, cleaner }) => {
   const dispatch = useDispatch();
@@ -73,7 +74,7 @@ const BookCleanerModal = ({ show, onHide, cleaner }) => {
   const handleSubmit = async () => {
     if (mode === "existing") {
       if (!selectedJob) {
-        alert("Please select a job");
+        toast.warning("Please select a job");
         return;
       }
       setShowConfirm(true);
@@ -81,7 +82,7 @@ const BookCleanerModal = ({ show, onHide, cleaner }) => {
       // Validate new job form
       if (!jobForm.title || !jobForm.description || !jobForm.location || 
           !jobForm.date || !jobForm.time || !jobForm.services || jobForm.services.length === 0) {
-        alert("Please fill all required fields");
+        toast.warning("Please fill all required fields");
         return;
       }
       setShowConfirm(true);

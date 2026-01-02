@@ -13,21 +13,34 @@ import {
   setCurrentChatId,
 } from "@/store/slices/chatsSlice";
 import { fetchUnreadCount, fetchChatMessages, selectUnreadCount } from "@/store/slices/messagesSlice";
+import { useNotificationsSocket } from "@/utils/useNotificationsSocket";
 
 const ChatBox = () => {
   const dispatch = useDispatch();
   const searchParams = useSearchParams();
 
+  const isAuthenticated = useSelector((s) => !!s.auth?.isAuthenticated);
+
   const chats = useSelector(selectAllChats) || [];
   const currentChatId = useSelector(selectCurrentChatId);
   const unreadCount = useSelector(selectUnreadCount);
   const prefetchSetRef = useRef(new Set());
-  const chatsRef = useRef([]);
 
-  // Keep a live ref of chats for use inside intervals
-  useEffect(() => {
-    chatsRef.current = chats;
-  }, [chats]);
+  useNotificationsSocket({
+    enabled: isAuthenticated,
+    onEvent: (evt) => {
+      const type = String(evt?.type || "").toLowerCase();
+      const chatIdFromEvt = evt?.chat_id ?? evt?.chatId ?? evt?.chat?.id ?? null;
+      const looksChatRelated = !!chatIdFromEvt || /message|chat/.test(type);
+      if (!looksChatRelated) return;
+
+      dispatch(fetchChats());
+      dispatch(fetchUnreadCount());
+      if (chatIdFromEvt) {
+        dispatch(fetchChatMessages({ chatId: chatIdFromEvt }));
+      }
+    },
+  });
 
   // Initial load: fetch my chats and unread count
   useEffect(() => {
@@ -45,25 +58,7 @@ const ChatBox = () => {
     }
   }, [searchParams, chats, currentChatId, dispatch]);
 
-  // Lightweight polling every 5s to keep list fresh and reorder by recency
-  useEffect(() => {
-    const id = setInterval(() => {
-      dispatch(fetchChats());
-      dispatch(fetchUnreadCount());
-      if (currentChatId) {
-        dispatch(fetchChatMessages({ chatId: currentChatId }));
-      }
-
-      // For any chat with unread messages, fetch its messages so previews/timestamps update
-      const snapshot = chatsRef.current || [];
-      snapshot.forEach((c) => {
-        if (c?.unread_messages_count > 0 && c.id !== currentChatId) {
-          dispatch(fetchChatMessages({ chatId: c.id }));
-        }
-      });
-    }, 5000);
-    return () => clearInterval(id);
-  }, [dispatch, currentChatId]);
+  // No polling: WS handles realtime updates. Keep REST fetch for initial load and on-demand prefetch.
 
   // Auto-select the first chat if none is selected
   useEffect(() => {

@@ -25,7 +25,7 @@ const RegBanner = () => {
     },
     {
       id: 2,
-      name: "Cleaners: Join TidyLinker Gurus Network",
+      name: "Cleaners: Join Find Cleaner Network",
       text: `Connect with quality clients, set your own rates, and grow your cleaning business with our platform.`,
       avatar: "/images/resource/candidate.png",
       bannerClass: "banner-style-two dark",
@@ -164,42 +164,82 @@ const RegBanner = () => {
           object-fit: cover;
         }
         
+        @media (max-width: 991px) {
+          .banner-style-one .inner-box,
+          .banner-style-two .inner-box {
+            padding: 30px;
+          }
+
+          .banner-style-one .content h3, 
+          .banner-style-two .content h3 {
+            font-size: 1rem;
+          }
+
+          .banner-style-one .content p, 
+          .banner-style-two .content p {
+            font-size: 0.813rem;
+          }
+        }
+
         @media (max-width: 768px) {
           .banner-style-one .inner-box,
           .banner-style-two .inner-box {
-            // flex-direction: column;
-            // text-align: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 25px;
           }
           
           .cta-buttons {
-            // justify-content: center;
-            // flex-direction: column;
-            // width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
           }
           
-          .btn {
-            // width: 100%;
+          .cta-buttons .btn {
+            min-width: 140px;
           }
           
           .banner-style-one .image,
           .banner-style-two .image {
             margin-bottom: 20px;
-            left: 0;
-            right: 0;
+            order: -1;
           }
 
           .banner-style-two .content, 
           .banner-style-one .content {
-              padding-right: 0px !important;
+            padding-right: 0px !important;
           }
         }
 
-        @media only screen and (max-width: 599px) {
-            .banner-style-two .content, .banner-style-one .content {
-                padding: 0;
-                text-align: left !important;
-            }
-      }
+        @media (max-width: 599px) {
+          .banner-style-two .content, 
+          .banner-style-one .content {
+            padding: 0;
+            text-align: center !important;
+          }
+
+          .banner-style-one .content h3, 
+          .banner-style-two .content h3 {
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+          }
+
+          .cta-buttons {
+            flex-direction: column;
+            width: 100%;
+          }
+          
+          .cta-buttons .btn {
+            width: 100%;
+            min-width: auto;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .banner-style-one .inner-box,
+          .banner-style-two .inner-box {
+            padding: 20px;
+          }
+        }
       `}</style>
     </>
   );

@@ -307,6 +307,18 @@ export const pageItems = [
     routePath: "/about",
   },
   {
+    name: "Community Impact",
+    routePath: "/community-impact",
+  },
+  {
+    name: "Support Programmes",
+    routePath: "/support-programmes",
+  },
+  {
+    name: "Courses",
+    routePath: "/courses",
+  },
+  {
     name: "Pricing",
     routePath: "/pricing",
   },

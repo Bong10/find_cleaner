@@ -12,6 +12,14 @@ import JobFeatured9 from "../job-featured/JobFeatured9";
 import Pricing3 from "../pricing/Pricing3";
 import TopCompany from "../top-company/TopCompany";
 import Header from "./Header";
+import StatsSection from "./StatsSection";
+import HowItWorksSection from "./HowItWorksSection";
+import TestimonialsSection from "./TestimonialsSection";
+import CTASection from "./CTASection";
+import PricingTransparency from "./PricingTransparency";
+import GuaranteesSection from "./GuaranteesSection";
+import FAQSection from "./FAQSection";
+import PopularLocationsSection from "./PopularLocationsSection";
 
 const index = () => {
   return (
@@ -27,6 +35,9 @@ const index = () => {
 
       <Hero13 />
       {/* End Hero Section */}
+
+      <StatsSection />
+      {/* End Stats Section - Trust Indicators */}
 
       <section className="layout-pt-120 layout-pb-60">
         <div className="auto-container">
@@ -57,6 +68,12 @@ const index = () => {
       </section>
       {/* <!-- End Job Categories --> */}
 
+      <PricingTransparency />
+      {/* <!-- End Pricing Transparency Section --> */}
+
+      <HowItWorksSection />
+      {/* <!-- End How It Works Section --> */}
+
       <section className="layout-pt-60 layout-pb-60">
         <div className="auto-container">
           <div className="row justify-content-center">
@@ -77,6 +94,15 @@ const index = () => {
         </div>
       </section>
       {/* <!-- End Work Section --> */}
+
+      <CTASection />
+      {/* <!-- End CTA Section --> */}
+
+      <TestimonialsSection />
+      {/* <!-- End Testimonials Section --> */}
+
+      <GuaranteesSection />
+      {/* <!-- End Guarantees Section --> */}
 
       <About9 />
       {/* <!-- End About Section --> */}
@@ -104,6 +130,9 @@ const index = () => {
         </div>
       </section>
       {/* <!-- End Job Section --> */}
+
+      <PopularLocationsSection />
+      {/* <!-- End Popular Locations Section --> */}
 
       <section className="layout-pt-60 layout-pb-60">
         <div className="auto-container">
@@ -171,6 +200,9 @@ const index = () => {
 
       <AppSection3 />
       {/* <!-- End App Section --> */}
+
+      <FAQSection />
+      {/* <!-- End FAQ Section --> */}
 
       <section className="clients-section-two alternate layout-pt-120 layout-pb-60">
         <div className="auto-container">

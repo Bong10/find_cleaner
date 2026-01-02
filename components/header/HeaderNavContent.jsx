@@ -8,11 +8,11 @@ const HeaderNavContent = () => {
 
   const menuItems = [
     { id: 1, name: "Home", path: "/" },
-    { id: 2, name: "Find Cleaners", path: "/cleaners" },
-    { id: 3, name: "Browse Jobs", path: "/jobs" },
-    // { id: 4, name: "Pricing & Plans", path: "/pricing" },
-    // { id: 5, name: "How It Works", path: "/home-12" },
-    // { id: 6, name: "Blog", path: "/blog-list-v1" },
+    { id: 2, name: "About Us", path: "/about" },
+    { id: 3, name: "Book a Cleaner", path: "/jobs" },
+    { id: 4, name: "For Cleaners", path: "/cleaners" },
+    { id: 5, name: "Courses", path: "/courses" },
+    { id: 6, name: "Contact", path: "/contact" },
   ];
 
   return (

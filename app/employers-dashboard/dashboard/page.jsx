@@ -3,8 +3,8 @@ import DashboadHome from "@/components/dashboard-pages/employers-dashboard/dashb
 import DashboardGuard from "@/components/auth/DashboardGuard";
 
 export const metadata = {
-  title: "Employer Dashboard || TidyLinker - Cleaning Job Management Portal",
-description: "Manage your cleaning job listings, track applications, and communicate with cleaners directly from your TidyLinker employer dashboard."
+  title: "Employer Dashboard || Find Cleaner - Cleaning Job Management Portal",
+description: "Manage your cleaning job listings, track applications, and communicate with cleaners directly from your Find Cleaner employer dashboard."
 };
 
 const index = () => {

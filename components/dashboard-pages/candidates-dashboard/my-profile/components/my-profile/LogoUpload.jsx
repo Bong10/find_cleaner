@@ -10,6 +10,8 @@ import {
   deleteAvatar,
   loadCompleteCleanerProfile,
 } from "@/store/slices/cleanerProfileSlice";
+import InitialsAvatar from "../../../../../common/InitialsAvatar";
+import { toast } from "react-toastify";
 
 export default function LogoUpload() {
   const dispatch = useDispatch();
@@ -60,7 +62,7 @@ const preview = useMemo(() => {
       console.debug("[LogoUpload] picked:", file.name, file.type, file.size);
       // Basic 1MB check to match your hint text (optional)
       if (file.size > 1024 * 1024) {
-        alert("Max file size is 1MB.");
+        toast.warning("Max file size is 1MB.");
         return;
       }
       dispatch(setAvatarFile(file));
@@ -99,16 +101,13 @@ const preview = useMemo(() => {
             </span>
           </div>
 
-          {preview ? (
+          {preview || user?.name ? (
             <div className="logo-preview" style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
-              <img
+              <InitialsAvatar
+                name={user?.name || user?.first_name || user?.email?.split('@')[0] || "User"}
                 src={preview}
-                alt="profile"
-                onError={(e) => {
-                  console.warn("[LogoUpload] image failed to load:", preview);
-                  e.currentTarget.style.display = "none";
-                }}
-                style={{ width: 60, height: 60, borderRadius: 8, objectFit: "cover" }}
+                size={60}
+                style={{ borderRadius: 8 }}
               />
 
               {/* ✅ save (green) */}

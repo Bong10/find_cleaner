@@ -11,6 +11,7 @@ import {
 } from "@/store/slices/chatsSlice";
 import Image from "next/image";
 import { markAllMessagesReadLocal } from "@/store/slices/messagesSlice";
+import InitialsAvatar from "../../../../common/InitialsAvatar";
 
 const ContactList = () => {
   const dispatch = useDispatch();
@@ -182,9 +183,8 @@ const ContactList = () => {
               const participant = getParticipant(chat);
               const isActive = chat.id === currentChatId;
 
-              const name = participant?.user?.name || "TidyLinker User";
-              const avatar =
-                participant?.user?.profile_picture || "/images/resource/candidate-1.png";
+              const name = participant?.user?.name || "Find Cleaner User";
+              const avatar = participant?.user?.profile_picture || null;
               const preview = getLastMessagePreview(chat);
               const time = getLastMessageTime(chat);
               const unread = deriveUnreadForChat(chat);
@@ -201,7 +201,11 @@ const ContactList = () => {
                   }}
                 >
                   <div className="contact-avatar">
-                    <Image fill src={avatar} alt={name} style={{ objectFit: "cover" }} sizes="50px" />
+                    <InitialsAvatar
+                      name={name}
+                      src={avatar}
+                      size={50}
+                    />
                   </div>
 
                   <div className="contact-info">

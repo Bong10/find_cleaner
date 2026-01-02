@@ -284,7 +284,12 @@ const notificationsSlice = createSlice({
     next: null,
     previous: null,
   },
-  reducers: {},
+  reducers: {
+    setNotificationsUnreadCount: (state, action) => {
+      const n = Number(action.payload);
+      state.unreadCount = Number.isFinite(n) ? n : 0;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchNotifications.pending, (state) => {
@@ -359,6 +364,8 @@ const notificationsSlice = createSlice({
       });
   },
 });
+
+export const { setNotificationsUnreadCount } = notificationsSlice.actions;
 
 export const selectNotifications = (state) => state.notifications.items;
 export const selectNotificationsLoading = (state) => state.notifications.loading;

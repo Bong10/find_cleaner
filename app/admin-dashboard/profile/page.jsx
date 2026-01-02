@@ -5,7 +5,7 @@ const AdminProfile = dynamic(() => import("@/components/dashboard-pages/admin-da
 });
 
 export const metadata = {
-  title: "My Profile | TidyLinker Admin",
+  title: "My Profile | Find Cleaner Admin",
   description: "Admin profile and account settings",
   robots: "noindex"
 };

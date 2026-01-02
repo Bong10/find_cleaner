@@ -95,8 +95,8 @@ const AdminLoginPage = () => {
                 width={54}
                 height={50}
                 src="/images/logo.png"
-                alt="TidyLinker Admin"
-                title="TidyLinker Admin Portal"
+                alt="Find Cleaner Admin"
+                title="Find Cleaner Admin Portal"
               />
             </div>
             <h1>Admin Portal</h1>
@@ -113,7 +113,7 @@ const AdminLoginPage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="admin@tidylinker.com"
+                placeholder="admin@findcleaner.com"
                 required
                 disabled={isLoading}
                 autoComplete="email"
@@ -178,7 +178,7 @@ const AdminLoginPage = () => {
         <div className="back-to-site">
           <Link href="/">
             <span className="la la-arrow-left"></span>
-            Back to TidyLinker
+            Back to Find Cleaner
           </Link>
         </div>
       </div>

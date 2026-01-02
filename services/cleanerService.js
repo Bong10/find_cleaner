@@ -14,7 +14,18 @@ export const patchCurrentUserMultipart = (formData) =>
 
 /** ------- Cleaner self (your new ViewSet) ------- */
 export const getCleanerMe = () => api.get("/api/users/cleaners/me/");
-export const patchCleanerMe = (data) => api.patch("/api/users/cleaners/me/", data);
+
+// Support both JSON and FormData (multipart) for cleaner profile updates
+export const patchCleanerMe = (data) => {
+  // Check if data is FormData (contains files)
+  if (data instanceof FormData) {
+    return api.patch("/api/users/cleaners/me/", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+  // Regular JSON data
+  return api.patch("/api/users/cleaners/me/", data);
+};
 
 /** ------- Get all cleaners (for candidates listing) ------- */
 export const getAllCleaners = (params) => {

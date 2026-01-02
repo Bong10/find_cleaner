@@ -8,6 +8,8 @@ import BreadCrumb from "../../BreadCrumb";
 import MyProfile from "./components/my-profile";
 import SocialNetworkBox from "./components/SocialNetworkBox";
 import ContactInfoBox from "./components/ContactInfoBox";
+import PropertyDetailsBox from "./components/my-profile/PropertyDetailsBox";
+import CleaningPreferencesBox from "./components/my-profile/CleaningPreferencesBox";
 import CopyrightFooter from "../../CopyrightFooter";
 import MenuToggler from "../../MenuToggler";
 
@@ -32,7 +34,7 @@ const index = () => {
 
   return (
     <div className="page-wrapper dashboard">
-      <span className="header-span"></span>
+      {/* <span className="header-span"></span> */}
 
       <LoginPopup />
       <DashboardHeader />
@@ -59,10 +61,21 @@ const index = () => {
               <div className="ls-widget">
                 <div className="tabs-box">
                   <div className="widget-title">
-                    <h4>Contact Information</h4>
+                    <h4>Property Details</h4>
                   </div>
                   <div className="widget-content">
-                    <ContactInfoBox />
+                    <PropertyDetailsBox />
+                  </div>
+                </div>
+              </div>
+
+              <div className="ls-widget">
+                <div className="tabs-box">
+                  <div className="widget-title">
+                    <h4>Cleaning Preferences</h4>
+                  </div>
+                  <div className="widget-content">
+                    <CleaningPreferencesBox />
                   </div>
                 </div>
               </div>

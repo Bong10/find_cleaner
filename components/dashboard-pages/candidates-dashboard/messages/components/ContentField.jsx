@@ -12,6 +12,7 @@ import {
   markAllMessagesReadLocal,
 } from "@/store/slices/messagesSlice";
 import { selectCurrentChat, fetchChats, setChatUnread } from "@/store/slices/chatsSlice";
+import { useChatSocket } from "@/utils/useChatSocket";
 
 const PRIMARY = "#4C9A99"; // brand color
 
@@ -20,18 +21,35 @@ const ContentField = () => {
   const selectedChat = useSelector(selectCurrentChat);
   const chatId = selectedChat?.id;
 
+  const authUser = useSelector((s) => s.auth?.user);
+
   const [text, setText] = useState("");
   const messages = useSelector(selectMessagesForChat(chatId));
   const loading = useSelector(selectMessagesLoading(chatId));
   const endRef = useRef(null);
+  const typingOffTimerRef = useRef(null);
+  const [otherIsTyping, setOtherIsTyping] = useState(false);
 
   const cleaner = selectedChat?.cleaner;
   const employer = selectedChat?.employer;
 
   // For cleaner dashboard, the header shows the employer
-  const cleanerAvatar = cleaner?.user?.profile_picture || "/images/resource/candidate-1.png";
-  const employerAvatar = employer?.user?.profile_picture || "/images/resource/employer-1.png";
+  const cleanerAvatar = cleaner?.user?.profile_picture || null;
+  const employerAvatar = employer?.user?.profile_picture || null;
+  const cleanerName = cleaner?.user?.name || cleaner?.user?.email?.split('@')[0] || "You";
+  const employerName = employer?.user?.name || employer?.user?.company_name || employer?.user?.email?.split('@')[0] || "Employer";
   const headerName = employer?.company_name || employer?.user?.name || "Conversation";
+
+  const { sendTyping, sendRead } = useChatSocket({
+    chatId,
+    enabled: !!chatId,
+    onTyping: (evt) => {
+      const isTyping = !!(evt?.is_typing ?? evt?.typing ?? evt?.isTyping);
+      const uid = evt?.user_id ?? evt?.sender_id ?? evt?.userId ?? null;
+      if (uid && authUser?.id && String(uid) === String(authUser.id)) return;
+      setOtherIsTyping(isTyping);
+    },
+  });
 
   /**
    * Determines if a message is from the 'cleaner' (self) or 'employer' (other).
@@ -78,6 +96,13 @@ const ContentField = () => {
       .catch(() => {});
   }, [dispatch, chatId]);
 
+  // Whenever new messages arrive while chat is open, send a read receipt.
+  useEffect(() => {
+    if (!chatId || !messages?.length) return;
+    const lastId = messages[messages.length - 1]?.id;
+    sendRead(lastId);
+  }, [chatId, messages?.length, sendRead]);
+
   // Auto-scroll to the latest message
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -87,12 +112,16 @@ const ContentField = () => {
     e.preventDefault();
     const content = text.trim();
     if (!content || !chatId) return;
+    setText("");
+    sendTyping(false);
     try {
-      await dispatch(sendMessage({ chat: chatId, content })).unwrap();
-      setText("");
-      dispatch(fetchChats()); // Refresh contact list preview
+      // Always use REST to send - this updates Redux immediately with the server response
+      // WS is used for receiving messages from others in real-time
+      const result = await dispatch(sendMessage({ chat: chatId, content })).unwrap();
+      console.log("[ContentField] Message sent, response:", result);
+      dispatch(fetchChats()); // refresh contact list preview
     } catch (error) {
-      // Handle error silently in UI
+      console.error("[ContentField] Failed to send message:", error);
     }
   };
 
@@ -140,7 +169,7 @@ const ContentField = () => {
             <div>
               <h6 className="title">{headerName}</h6>
               <small className="subtitle">
-                {messages.length} {messages.length === 1 ? "Message" : "Messages"}
+                {otherIsTyping ? "Typing..." : `${messages.length} ${messages.length === 1 ? "Message" : "Messages"}`}
               </small>
             </div>
           </div>
@@ -212,7 +241,14 @@ const ContentField = () => {
                 className="msg-input"
                 placeholder="Type your message..."
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => {
+                  setText(e.target.value);
+                  sendTyping(true);
+                  if (typingOffTimerRef.current) clearTimeout(typingOffTimerRef.current);
+                  typingOffTimerRef.current = setTimeout(() => {
+                    sendTyping(false);
+                  }, 1200);
+                }}
                 rows={1}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
