@@ -20,6 +20,7 @@ import {
   addDestination,
 } from "../../../features/filter/candidateFilterSlice";
 import { fetchCleaners, setSelectedCleaner } from "@/store/slices/usersSlice";
+import { BASE_URL } from "@/utils/axiosConfig";
 
 const Index = () => {
   const dispatch = useDispatch();
@@ -123,7 +124,7 @@ const Index = () => {
           userData.profile_picture &&
           (userData.profile_picture.startsWith("http")
             ? userData.profile_picture
-            : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${userData.profile_picture}`) ||
+            : `${BASE_URL}${userData.profile_picture}`) ||
           `/images/resource/candidate-${(index % 10) + 1}.png`,
         createdAt: createdDate,
         originalIndex: index, // Keep original index for stable sorting

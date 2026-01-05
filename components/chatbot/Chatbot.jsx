@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import apiClient from "../../utils/axiosConfig";
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -16,6 +18,26 @@ const Chatbot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // Initialize session
+  useEffect(() => {
+    const initSession = async () => {
+      const storedSession = localStorage.getItem("chatbot_session_id");
+      if (storedSession) {
+        setSessionId(storedSession);
+      } else {
+        try {
+          // Note: Ensure 'path('api/chatbot/', include('chatbot.urls'))' is uncommented in backend urls.py
+          const res = await apiClient.post("/api/chatbot/bot/start_session/");
+          setSessionId(res.data.session_id);
+          localStorage.setItem("chatbot_session_id", res.data.session_id);
+        } catch (err) {
+          console.error("Failed to start chat session:", err);
+        }
+      }
+    };
+    initSession();
+  }, []);
 
   // Auto-popup for new visitors after 30 seconds
   useEffect(() => {
@@ -62,23 +84,23 @@ const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      // Call the Next.js API route that connects to OpenAI
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: currentInput,
-          history: messages.slice(-10) // Send last 10 messages for context
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response');
+      // Call the Django Backend API
+      let currentSessionId = sessionId;
+      
+      // If no session, try to create one first
+      if (!currentSessionId) {
+        const sessionRes = await apiClient.post("/api/chatbot/bot/start_session/");
+        currentSessionId = sessionRes.data.session_id;
+        setSessionId(currentSessionId);
+        localStorage.setItem("chatbot_session_id", currentSessionId);
       }
 
-      const data = await response.json();
+      const response = await apiClient.post("/api/chatbot/bot/send_message/", {
+        session_id: currentSessionId,
+        message: currentInput
+      });
+
+      const data = response.data;
       
       const botResponse = {
         id: messages.length + 2,
@@ -94,7 +116,7 @@ const Chatbot = () => {
       // Fallback to simple responses if API fails
       const botResponse = {
         id: messages.length + 2,
-        text: getBotResponse(currentInput),
+        text: "I'm having trouble connecting to the server. Please try again later.",
         sender: "bot",
         timestamp: new Date()
       };

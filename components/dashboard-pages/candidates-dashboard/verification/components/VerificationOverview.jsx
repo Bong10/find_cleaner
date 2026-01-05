@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getCleanerMe, patchCleanerMe } from "@/services/cleanerService";
 import { toast } from "react-toastify";
+import { BASE_URL } from "@/utils/axiosConfig";
 
 const VerificationOverview = () => {
   const [loading, setLoading] = useState(true);
@@ -80,7 +81,7 @@ const VerificationOverview = () => {
     if (!url) return null;
     // If it's a relative URL, prepend the backend base URL
     if (url.startsWith('/media/')) {
-      return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url}`;
+      return `${BASE_URL}${url}`;
     }
     return url;
   };

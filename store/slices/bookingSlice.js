@@ -1,8 +1,8 @@
 // store/slices/bookingSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "@/utils/axiosConfig";
+import api, { BASE_URL } from "@/utils/axiosConfig";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://cgsabiozard.co.uk";
+const API_URL = BASE_URL;
 
 // Fetch all bookings
 export const fetchBookings = createAsyncThunk(

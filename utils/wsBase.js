@@ -1,4 +1,5 @@
 // utils/wsBase.js
+import { BASE_URL } from "@/utils/axiosConfig";
 
 const stripTrailingSlashes = (s) => String(s || "").replace(/\/+$/, "");
 
@@ -17,8 +18,7 @@ const toWsOrigin = (origin) => {
 export const getWsBaseUrl = () => {
   const wsBase =
     (typeof process !== "undefined" && process.env.NEXT_PUBLIC_WS_BASE_URL) ||
-    (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_BASE_URL) ||
-    "http://127.0.0.1:8000";
+    BASE_URL;
 
   return toWsOrigin(wsBase);
 };
