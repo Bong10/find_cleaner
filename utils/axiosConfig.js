@@ -2,8 +2,8 @@
 import axios from "axios";
 
 const RAW_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://217.154.36.63/";
-  // process.env.NEXT_PUBLIC_API_BASE_URL || "https://cgsabiozard.co.uk";
+  // process.env.NEXT_PUBLIC_API_BASE_URL || "http://217.154.36.63/";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://cgsabiozard.co.uk";
 export const BASE_URL = RAW_BASE_URL.replace(/\/+$/, ""); // strip trailing slash
 
 let isRefreshing = false;
