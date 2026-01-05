@@ -1,6 +1,6 @@
 // next.config.js
 
-const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://217.154.36.63/";
 const { protocol, hostname, port } = new URL(apiUrl);
 
 /** @type {import('next').NextConfig} */
@@ -11,7 +11,7 @@ const nextConfig = {
       {
         protocol: protocol.replace(":", ""),
         hostname: hostname,
-        port: port,
+        // port: port,
         pathname: '/media/**',
       },
     ],
