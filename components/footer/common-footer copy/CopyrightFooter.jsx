@@ -6,7 +6,7 @@ const CopyrightFooter = () => {
       <div className="auto-container">
         <div className="outer-box">
           <div className="copyright-text">
-            © {new Date().getFullYear()} Tidy Linker by{" "}
+            © {new Date().getFullYear()} Find Cleaner by{" "}
             <a
               href="https://digitalwebsolutions.co.uk"
               target="_blank"

@@ -64,8 +64,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <title>TidyLinking - Connecting Cleaners with Opportunities</title>
-        <meta name="description" content="TidyLinking - Connecting Cleaners with Opportunities" />
+        <title>Find Cleaner - Connecting Cleaners with Opportunities</title>
+        <meta name="description" content="Find Cleaner - Connecting Cleaners with Opportunities" />
         <meta name="keywords" content="candidates, career, employment, job board, job listing, job portal, job search, recruiters, recruitment, resume" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link

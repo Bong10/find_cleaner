@@ -90,7 +90,7 @@ const Preloader = () => {
             }}>
               <Image
                 src="/images/logo.png"
-                alt="TidyLinking"
+                alt="Find Cleaner"
                 width={50}
                 height={50}
                 priority
@@ -109,7 +109,7 @@ const Preloader = () => {
             color: '#4b9b97',
             marginBottom: '8px',
           }}>
-            TidyLinking
+            Find Cleaner
           </span>
           <span style={{
             display: 'block',

@@ -8,8 +8,8 @@ import blogs from "@/data/blogs";
 import Image from "next/image";
 
 export const metadata = {
- title: "TidyLinker Blog Details | Expert Cleaning Advice & Real-Life Job Stories",
-description: "Read detailed cleaning guides, industry insights, and inspiring stories from professionals on TidyLinker — the platform that connects cleaners with real opportunities and clients who care.",
+ title: "Find Cleaner Blog Details | Expert Cleaning Advice & Real-Life Job Stories",
+description: "Read detailed cleaning guides, industry insights, and inspiring stories from professionals on Find Cleaner — the platform that connects cleaners with real opportunities and clients who care.",
 };
 
 const BlogDetailsDynamic = ({ params }) => {
