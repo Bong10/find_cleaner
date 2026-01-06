@@ -21,6 +21,7 @@ const processQueue = (error, token = null) => {
 const api = axios.create({
   baseURL: BASE_URL,     // e.g. http://127.0.0.1:8000
   timeout: 15000,
+  timeoutErrorMessage: "Request timed out. Please verify your internet connection and try again.",
   withCredentials: true, // send HttpOnly cookie on /auth/jwt/*
   headers: {
     "Content-Type": "application/json",
