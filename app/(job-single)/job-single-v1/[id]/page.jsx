@@ -240,7 +240,7 @@ const JobSingleDynamicV1 = ({ params }) => {
                    job?.company_logo;
       
       if (logo && !logo.startsWith('http')) {
-        return `${process.env.NEXT_PUBLIC_API_URL || 'https://cgsabiozard.co.uk'}${logo}`;
+        return `${process.env.NEXT_PUBLIC_API_URL || 'anksolutionsld.com'}${logo}`;
       }
       return logo || FALLBACK_LOGO;
     }
