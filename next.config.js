@@ -1,6 +1,6 @@
 // next.config.js
 
-const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cgsabiozard.co.uk";
+const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://anksolutionsld.com";
 const { protocol, hostname, port } = new URL(apiUrl);
 
 /** @type {import('next').NextConfig} */
