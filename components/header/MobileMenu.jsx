@@ -8,6 +8,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const MobileMenu = () => {
+
+  const primaryMenuItems = [
+  { name: "Home", path: "/" },
+  { name: "About Us", path: "/about" },
+  { name: "Book a Cleaner", path: "/jobs" },
+  { name: "For Cleaners", path: "/cleaners" },
+  { name: "Courses", path: "/courses" },
+  { name: "Contact", path: "/contact" },
+  ];
+  
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -47,10 +57,7 @@ const MobileMenu = () => {
             <div className="nav-outer">
               <div className="logo-box">
                 <div className="logo">
-                  <Link
-                    href="/"
-                    style={{ position: "relative", zIndex: 1000, pointerEvents: "auto" }}
-                  >
+                  <Link href={isAuthenticated ? getDashboardRoute() : "/"}>
                     <Image
                       width={40}
                       height={36}
@@ -83,18 +90,46 @@ const MobileMenu = () => {
                   </button>
 
                   {/* My Account button */}
-                  <button 
-                    className="mobile-account-btn"
-                    onClick={handleAccountClick}
-                  >
-                    <Image
-                      alt="avatar"
-                      className="mobile-avatar"
-                      src={avatarSrc}
-                      width={32}
-                      height={32}
-                    />
-                  </button>
+
+                  {/* Mobile account dropdown */}
+                  <div className="dropdown">
+                    <button
+                      type="button"
+                      className="mobile-account-btn dropdown-toggle"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      aria-label="Open navigation menu"
+                    >
+                      <Image
+                        alt="avatar"
+                        className="mobile-avatar"
+                        src={avatarSrc}
+                        width={32}
+                        height={32}
+                      />
+                    </button>
+                  
+                    <ul className="dropdown-menu dropdown-menu-end">
+                      <li>
+                        <Link className="dropdown-item" href={getDashboardRoute()}>
+                          My Dashboard
+                        </Link>
+                      </li>
+                  
+                      <li>
+                        <hr className="dropdown-divider" />
+                      </li>
+                  
+                      {primaryMenuItems.map((item) => (
+                        <li key={item.path}>
+                          <Link className="dropdown-item" href={item.path}>
+                            {item.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
                 </>
               ) : (
                 <>
