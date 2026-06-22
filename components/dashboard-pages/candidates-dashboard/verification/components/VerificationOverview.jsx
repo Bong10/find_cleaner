@@ -5,6 +5,8 @@ import { getCleanerMe, patchCleanerMe } from "@/services/cleanerService";
 import { toast } from "react-toastify";
 import { BASE_URL } from "@/utils/axiosConfig";
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
 const VerificationOverview = () => {
   const [loading, setLoading] = useState(true);
   const [verification, setVerification] = useState({
@@ -114,12 +116,20 @@ const VerificationOverview = () => {
   };
 
   const handleFileChange = (fieldName, files) => {
-    if (files && files.length > 0) {
-      setResubmitFiles(prev => ({
-        ...prev,
-        [fieldName]: files[0]
-      }));
+    const file = files?.[0];
+    if (!file) return;
+  
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(
+        `${file.name} is ${(file.size / 1024 / 1024).toFixed(2)} MB. Maximum allowed size is 5 MB.`
+      );
+      return;
     }
+  
+    setResubmitFiles((prev) => ({
+      ...prev,
+      [fieldName]: file,
+    }));
   };
 
   const handleSubmitResubmission = async () => {
@@ -225,18 +235,28 @@ const VerificationOverview = () => {
       setResubmitFiles({});
       
       toast.success("Your documents have been resubmitted successfully! Status updated to pending.");
-    } catch (error) {
-      console.error("=== ERROR RESUBMITTING DOCUMENTS ===");
-      console.error("Error object:", error);
-      console.error("Error response:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-      console.error("====================================");
+    } } catch (error) {
+        console.error("Error resubmitting documents:", error);
       
-      const errorMessage = error.response?.data?.message || error.response?.data?.detail || "Failed to resubmit documents. Please try again.";
-      toast.error(errorMessage);
-    } finally {
-      setSubmitting(false);
-    }
+        if (error.response?.status === 413) {
+          toast.error("Document is too large. Maximum allowed size is 5 MB.");
+        } else {
+          const responseData = error.response?.data;
+      
+          const backendMessage =
+            responseData?.id_document_front?.[0] ||
+            responseData?.id_document_back?.[0] ||
+            responseData?.dbs_certificate?.[0] ||
+            responseData?.detail ||
+            responseData?.message;
+      
+          toast.error(
+            backendMessage || "Document upload failed. Please try again."
+          );
+        }
+      } finally {
+        setSubmitting(false);
+      }
   };
 
   const closeModal = () => {
@@ -788,6 +808,9 @@ const VerificationOverview = () => {
                         outline: "none",
                       }}
                     />
+                    <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#5f6368" }}>
+                    PDF, JPG or PNG. Maximum file size: 5 MB.
+                  </p>
                   </div>
 
                   <div>
@@ -813,6 +836,9 @@ const VerificationOverview = () => {
                         outline: "none",
                       }}
                     />
+                    <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#5f6368" }}>
+                    PDF, JPG or PNG. Maximum file size: 5 MB.
+                    </p>
                     <p style={{ margin: "8px 0 0 0", fontSize: "12px", color: "#5f6368" }}>
                       Upload both sides of your ID document
                     </p>
