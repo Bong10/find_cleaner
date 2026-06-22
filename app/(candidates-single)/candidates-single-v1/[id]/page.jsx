@@ -111,6 +111,7 @@ const CandidateSingleDynamicV1 = ({ params }) => {
   };
 
   // Helper function to get skills
+  
   const getSkills = () => {
     if (!cleaner) return [];
   
@@ -131,6 +132,7 @@ const CandidateSingleDynamicV1 = ({ params }) => {
       );
     });
   };
+  
   // Helper function to get tags
   const getTags = () => {
     if (!cleaner) return [];
