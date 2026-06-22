@@ -120,13 +120,17 @@ const CandidateSingleDynamicV1 = ({ params }) => {
       cleaner.skills ||
       [];
   
-    return skills.map((skill) =>
-      typeof skill === "string"
-        ? skill
-        : skill?.name || skill?.title || String(skill?.id || "Service")
-    );
+    return skills.map((skill) => {
+      if (typeof skill === "string") return skill;
+  
+      return (
+        skill?.name ||
+        skill?.title ||
+        skill?.service_name ||
+        `Service ${skill?.id || ""}`
+      );
+    });
   };
-
   // Helper function to get tags
   const getTags = () => {
     if (!cleaner) return [];
