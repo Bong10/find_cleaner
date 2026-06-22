@@ -7,7 +7,7 @@ module.exports = [
   {
     id: 2,
     label: "Book a Cleaner",
-    routePath: "/cleaners",
+    routePath: "/jobs",
   },
   {
     id: 3,
