@@ -769,6 +769,35 @@
 	}
 }
 
+/* Fix dashboard header mobile clickability */
+@media only screen and (max-width: 1266px) {
+    .main-header .dashboard-option {
+        position: relative;
+        z-index: 1000;
+    }
+    
+    .main-header .dashboard-option .dropdown-toggle {
+        display: flex !important;
+        pointer-events: auto;
+        cursor: pointer;
+    }
+    
+    .main-header .dashboard-option .dropdown-menu {
+        display: block !important;
+        pointer-events: auto;
+    }
+    
+    .main-header .dashboard-option .dropdown-menu li a {
+        pointer-events: auto;
+    }
+    
+    /* Make buttons clickable */
+    .main-header .menu-btn {
+        pointer-events: auto;
+        cursor: pointer;
+    }
+}
+
 @media only screen and (min-width: 768px) {
 	.main-menu .navigation > li > ul,
 	.main-menu .navigation > li > ul > li > ul,
