@@ -235,7 +235,7 @@ const VerificationOverview = () => {
       setResubmitFiles({});
       
       toast.success("Your documents have been resubmitted successfully! Status updated to pending.");
-    } } catch (error) {
+    } catch (error) {
         console.error("Error resubmitting documents:", error);
       
         if (error.response?.status === 413) {
