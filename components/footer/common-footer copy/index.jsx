@@ -23,8 +23,7 @@ const index = ({ footerStyle = "" }) => {
                 </div>
                 <p className="phone-num">
                   <span>Call us </span>
-                  <a href="tel:07311719444">073 1171 9444/
-                  075 033 91037</a>
+                  <a href="tel:07359036102">073 5903 6102</a>
                 </p>
                 <p className="address">
                 70 chartfield road cb1 9jy.
