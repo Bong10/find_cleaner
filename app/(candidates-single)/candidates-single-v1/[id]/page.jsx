@@ -471,13 +471,14 @@ const CandidateSingleDynamicV1 = ({ params }) => {
                           <span>{cleaner?.isVerified || cleaner?.is_verified ? "Verified" : "Not Verified"}</span>
                         </li>
 
-                        {cleaner?.availability && (
-                          <li>
-                            <i className="icon icon-clock"></i>
-                            <h5>Availability:</h5>
-                            <span>{cleaner.availability}</span>
-                          </li>
-                        )}
+                        {cleaner?.availability &&
+                          typeof cleaner.availability === "string" && (
+                            <li>
+                              <i className="icon icon-clock"></i>
+                              <h5>Availability:</h5>
+                              <span>{cleaner.availability}</span>
+                            </li>
+                          )}
                       </ul>
                     </div>
                   </div>
