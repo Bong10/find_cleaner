@@ -221,6 +221,20 @@ export default function PostBoxForm() {
             />
           </div>
 
+          {/* Hourly rate */}
+          <div className="form-group col-lg-6 col-md-12">
+            <label>Hourly Rate (£)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="e.g. 25.00"
+              value={form.hourly_rate}
+              onChange={onBasicChange("hourly_rate")}
+              required
+            />
+          </div>
+
           {/* Hours required */}
           <div className="form-group col-lg-6 col-md-12">
             <label>Hours required</label>
