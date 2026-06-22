@@ -13,13 +13,13 @@ const CopyrightFooter = () => {
           {/* Brand logo */}
           <div className="footer-brand">
             <Link href="/" className="footer-logo" aria-label="CG Cambridge Group Home">
-              <Image
+              {/* <Image
                 src="/images/dws.png"
                 alt="Digital Web Solutions Logo"
                 width={154}
                 height={54}
                 priority
-              />
+              /> */}
               {/* <span className="footer-group">Digital Web Solutions</span> */}
             </Link>
           </div>
