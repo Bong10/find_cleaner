@@ -38,11 +38,33 @@ const VerificationOverview = () => {
       setCleanerData(data);
 
       // Use backend values directly without conversion
-      setVerification({
-        dbs_check: data.dbs_verified,
-        id_verified: data.id_verified,
-        references_verified: data.references_verified,
-      });
+    const normalizeStatus = (status, fallbackVerified = false) => {
+      if (["approved", "rejected", "pending"].includes(status)) {
+        return status;
+      }
+
+      return fallbackVerified ? "approved" : "pending";
+    };
+
+    setVerification({
+      dbs_check: normalizeStatus(
+        data.dbs_verified,
+        data.dbs_check === true
+      ),
+
+      id_verified: normalizeStatus(
+        data.id_verified,
+        Boolean(data.id_document_front && data.id_document_back)
+      ),
+
+      references_verified: normalizeStatus(
+        data.references_verified,
+        Boolean(
+          data.professional_ref_name &&
+          data.character_ref_name
+        )
+      ),
+    });
     } catch (error) {
       console.error("Error loading verification status:", error);
     } finally {
