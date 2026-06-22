@@ -427,55 +427,52 @@ const VerificationOverview = () => {
               </div>
 
               {/* Rejected Alert with Resubmit Button */}
-              {item.status === "rejected" && (
-                <div style={{
-                  marginTop: "16px",
-                  padding: "12px 16px",
-                  background: "#fff3cd",
-                  border: "1px solid #ffc107",
-                  borderRadius: "6px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                }}>
+               {item.status !== "approved" && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    padding: "12px 16px",
+                    background: item.status === "rejected" ? "#fff3cd" : "#f8f9fa",
+                    border: `1px solid ${
+                      item.status === "rejected" ? "#ffc107" : "#e0e0e0"
+                    }`,
+                    borderRadius: "6px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "12px",
+                  }}
+                >
                   <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontSize: "13px", color: "#856404", fontWeight: "600" }}>
-                      <i className="la la-exclamation-triangle" style={{ marginRight: "6px" }}></i>
-                      Verification Rejected
+                    <p style={{ margin: 0, fontSize: "13px", fontWeight: "600" }}>
+                      {item.status === "rejected"
+                        ? "Verification Rejected"
+                        : item.hasSubmission
+                        ? "Awaiting Admin Review"
+                        : "Information Required"}
                     </p>
-                    <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#856404" }}>
-                      Please review and resubmit your {item.title.toLowerCase()} information.
+              
+                    <p style={{ margin: "4px 0 0", fontSize: "12px" }}>
+                      {item.status === "rejected"
+                        ? `Please review and resubmit your ${item.title.toLowerCase()} information.`
+                        : item.hasSubmission
+                        ? `Your ${item.title.toLowerCase()} information has been submitted and is pending review.`
+                        : `Please submit your ${item.title.toLowerCase()} information.`}
                     </p>
                   </div>
-                  <a
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleResubmit(item.id);
-                    }}
-                    style={{
-                      padding: "8px 16px",
-                      background: "#2aa389",
-                      color: "white",
-                      borderRadius: "6px",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      textDecoration: "none",
-                      whiteSpace: "nowrap",
-                      transition: "all 0.2s ease",
-                      cursor: "pointer",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#238c74";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#2aa389";
-                    }}
-                  >
-                    Resubmit
-                  </a>
+              
+                  {(item.status === "rejected" || !item.hasSubmission) && (
+                    <button
+                      type="button"
+                      onClick={() => handleResubmit(item.id)}
+                      className="theme-btn btn-style-one"
+                    >
+                      {item.status === "rejected" ? "Resubmit" : "Upload"}
+                    </button>
+                  )}
                 </div>
               )}
+              
             </div>
           ))}
         </div>
