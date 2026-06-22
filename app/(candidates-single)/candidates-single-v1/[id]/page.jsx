@@ -113,7 +113,18 @@ const CandidateSingleDynamicV1 = ({ params }) => {
   // Helper function to get skills
   const getSkills = () => {
     if (!cleaner) return [];
-    return cleaner.services || cleaner.specializations || cleaner.skills || ["House Cleaning", "Office Cleaning", "Deep Cleaning"];
+  
+    const skills =
+      cleaner.services ||
+      cleaner.specializations ||
+      cleaner.skills ||
+      [];
+  
+    return skills.map((skill) =>
+      typeof skill === "string"
+        ? skill
+        : skill?.name || skill?.title || String(skill?.id || "Service")
+    );
   };
 
   // Helper function to get tags
