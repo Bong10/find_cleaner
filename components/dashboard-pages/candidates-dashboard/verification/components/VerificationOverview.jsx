@@ -427,7 +427,7 @@ const VerificationOverview = () => {
               </div>
 
               {/* Rejected Alert with Resubmit Button */}
-              {item.status !== "approved" && (
+              {item.status === "rejected" && (
                 <div style={{
                   marginTop: "16px",
                   padding: "12px 16px",
