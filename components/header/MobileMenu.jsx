@@ -47,7 +47,9 @@ const MobileMenu = () => {
             <div className="nav-outer">
               <div className="logo-box">
                 <div className="logo">
-                  <Link href={isAuthenticated ? getDashboardRoute() : "/"}>
+                  <Link href={isAuthenticated ? getDashboardRoute() : "/"}
+                      style={{ position: "relative", zIndex: 1000, pointerEvents: "auto" }}
+                    >
                     <Image
                       width={40}
                       height={36}
